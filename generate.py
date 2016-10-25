@@ -36,7 +36,7 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             # arraymap_id = sample['_id']
             # call = {'type': seg_type, 'start': start, 'end': end, 'value': value,
             #         'arraymap_id': arraymap_id, 'callset_id': callset_id}
-            call = {'CALLSET_ID': sample['UID'], 'biosample_id': biosample_id, 'VALUE': seg['SEGVALUE']}
+            call = {'call_set_id': sample['UID'], 'biosample_id': biosample_id, 'VALUE': seg['SEGVALUE']}
             #print(str(sample['_id']))
             if tag in variants:
                 variants[tag]['CALLS'].append(call)
