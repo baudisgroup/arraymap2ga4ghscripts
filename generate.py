@@ -1,13 +1,15 @@
 from pymongo import MongoClient
-import re, argparse, sys
+import re
+# import argparse, sys
 
 client = MongoClient()
 db = client.arraymap
 samples = db.samples
 variants = {}
-sampleno = 1000
+sampleno = 100
 
 i = 1
+varid = 1
 
 for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1}):
     if ('SEGMENTS_HG18' in sample) and (sample['SEGMENTS_HG18'] is not None) and (len(sample['SEGMENTS_HG18']) > 1):
@@ -19,7 +21,12 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
         if not matchObj:
             biosample_id = 'AM_BS__'+callset_id
         for seg in sample['SEGMENTS_HG18']:
-            tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+str(seg['SEGTYPE'])
+            alternate_bases = ''
+            if seg['SEGTYPE'] < 0:
+                alternate_bases = 'DEL'
+            elif seg['SEGTYPE'] > 0:
+                alternate_bases = 'DUP'
+            tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
             # seg_type = int(seg['SEGTYPE'])
             # start = int(seg['SEGSTART'])
             # end = int(seg['SEGSTOP'])
@@ -33,11 +40,13 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             if tag in variants:
                 variants[tag]['CALLS'].append(call)
             else:
-                variants[tag] = {'START': seg['SEGSTART'], 'STOP': seg[
-                    'SEGSTOP'], 'CHRO': seg['CHRO'], 'ALT': seg['SEGTYPE'], 'CALLS':[call]}
+                variants[tag] = { 'id': varid, 'start': seg['SEGSTART'], 'end': seg[
+                    'SEGSTOP'], 'reference_name': seg['CHRO'], 'alternate_bases': alternate_bases, 'CALLS':[call]}
+                varid += 1
         if sampleno > 1:
             print i
             if i >= sampleno:
+                print str(varid)+' variants were created'
                 break
         i += 1
 
