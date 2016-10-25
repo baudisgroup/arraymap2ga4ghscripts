@@ -6,10 +6,11 @@ client = MongoClient()
 db = client.arraymap
 samples = db.samples
 variants = {}
-sampleno = 100
+sampleno = -1
 
 i = 1
 varid = 1
+callno = 0
 
 for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1}):
     if ('SEGMENTS_HG18' in sample) and (sample['SEGMENTS_HG18'] is not None) and (len(sample['SEGMENTS_HG18']) > 1):
@@ -39,18 +40,28 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             #print(str(sample['_id']))
             if tag in variants:
                 variants[tag]['CALLS'].append(call)
+                callno += 1
             else:
                 variants[tag] = { 'id': varid, 'start': seg['SEGSTART'], 'end': seg[
                     'SEGSTOP'], 'reference_name': seg['CHRO'], 'alternate_bases': alternate_bases, 'CALLS':[call]}
                 varid += 1
-        if sampleno > 1:
+                callno += 1
+
+        matchObj = re.search('000$', str(i))
+        if matchObj:
             print i
-            if i >= sampleno:
+
+        i += 1
+
+        if sampleno > 0:
+            if i > sampleno:
+                varid -= 1
                 print str(varid)+' variants were created'
                 break
-        i += 1
 
 db_variants = db.myvariants
 db_variants.remove()
 for k,v in variants.items():
 	insert_id = db_variants.insert(v)
+
+print str(callno)+' calls were found for '+str(varid)+' variants'
