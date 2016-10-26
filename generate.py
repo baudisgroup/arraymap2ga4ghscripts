@@ -25,20 +25,41 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
 
         for seg in sample['SEGMENTS_HG18']:
             alternate_bases = ''
+            start = int()
+            end = int()
+            varvalue = float()
             if seg['SEGTYPE'] < 0:
                 alternate_bases = 'DEL'
             elif seg['SEGTYPE'] > 0:
                 alternate_bases = 'DUP'
 
+            try:
+                start = int(float(seg['SEGSTART']))
+            except TypeError:
+                print 'TypeError: '+str(callset_id)+' - SEGSTART'
+                continue
+
+            try:
+                end = int(float(seg['SEGSTOP']))
+            except TypeError:
+                print 'TypeError: '+str(callset_id)+' - SEGSTOP'
+                continue
+
             tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-            call = {'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id), 'VALUE': float(seg['SEGVALUE'])}
+            call = {'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id)}
+
+            try:
+                varvalue = float(seg['SEGVALUE'])
+            except ValueError:
+                print 'ValueError: '+str(callset_id)+' - VALUE'
+            else:
+                call['VALUE'] = float(seg['SEGVALUE'])
 
             if tag in variants:
                 variants[tag]['CALLS'].append(call)
                 callno += 1
             else:
-                variants[tag] = { 'id': str(varid), 'start': int(float(seg['SEGSTART'])), 'end': int(float(seg[
-                    'SEGSTOP'])), 'reference_name': str(seg['CHRO']), 'alternate_bases': str(alternate_bases), 'CALLS':[call]}
+                variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'alternate_bases': str(alternate_bases), 'CALLS':[call]}
                 varid += 1
                 callno += 1
 
