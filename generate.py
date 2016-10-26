@@ -31,14 +31,14 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
                 alternate_bases = 'DUP'
 
             tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-            call = {'call_set_id': sample['UID'], 'biosample_id': biosample_id, 'VALUE': seg['SEGVALUE']}
+            call = {'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id), 'VALUE': float(seg['SEGVALUE'])}
 
             if tag in variants:
                 variants[tag]['CALLS'].append(call)
                 callno += 1
             else:
-                variants[tag] = { 'id': varid, 'start': seg['SEGSTART'], 'end': seg[
-                    'SEGSTOP'], 'reference_name': seg['CHRO'], 'alternate_bases': alternate_bases, 'CALLS':[call]}
+                variants[tag] = { 'id': str(varid), 'start': int(float(seg['SEGSTART'])), 'end': int(float(seg[
+                    'SEGSTOP'])), 'reference_name': str(seg['CHRO']), 'alternate_bases': str(alternate_bases), 'CALLS':[call]}
                 varid += 1
                 callno += 1
 
