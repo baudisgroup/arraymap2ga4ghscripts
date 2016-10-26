@@ -75,12 +75,20 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
                 print str(varid)+' variants were created'
                 break
 
-db_variants = db.myvariants
+print str(callno)+' calls were found for '+str(varid)+' variants'
+
+i = 0
+
+db_variants = db.variants
 db_variants.remove()
 for k,v in variants.items():
 	insert_id = db_variants.insert(v)
+    i += 1
+    matchObj = re.search('000$', str(i))
+    if matchObj:
+        print i
 
-print str(callno)+' calls were found for '+str(varid)+' variants'
+print str(i)+' variants were loaded into the variants collection.'
 
 # with open('variants.json', 'w') as outfile:
 #     json.dump(variants, outfile, indent=4, sort_keys=True, separators=(',', ':'))
