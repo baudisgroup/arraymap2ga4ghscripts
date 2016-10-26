@@ -1,4 +1,5 @@
-USAGE: python3 generate.py
+USAGE:
+* `python generate.py`
 
 Pre-requirement:
 * `sudo pip install pymongo`
