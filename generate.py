@@ -7,7 +7,10 @@ client = MongoClient()
 db = client.arraymap
 samples = db.samples
 variants = {}
-sampleno = 3000
+sampleno = -1
+
+if sampleno > 0:
+    print 'Test run - only '+str(sampleno)+' samples will be processed!'
 
 i = 1
 varid = 1
