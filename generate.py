@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import re
+import datetime
 # import argparse, sys, json
 
 client = MongoClient()
@@ -7,6 +8,9 @@ db = client.arraymap
 samples = db.samples
 variants = {}
 sampleno = -1
+
+if sampleno > 0:
+    print 'Test run - only '+str(sampleno)+' samples will be processed!'
 
 i = 1
 varid = 1
@@ -24,10 +28,19 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             biosample_id = 'AM_BS__'+callset_id
 
         for seg in sample['SEGMENTS_HG18']:
+
+            typevalue = int()
             alternate_bases = ''
             start = int()
             end = int()
             varvalue = float()
+
+            try:
+                typevalue = int(seg['SEGTYPE'])
+            except TypeError:
+                print 'TypeError: '+str(callset_id)+' - SEGTYPE; skipping'
+                continue
+
             if seg['SEGTYPE'] < 0:
                 alternate_bases = 'DEL'
             elif seg['SEGTYPE'] > 0:
@@ -36,30 +49,30 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             try:
                 start = int(float(seg['SEGSTART']))
             except TypeError:
-                print 'TypeError: '+str(callset_id)+' - SEGSTART'
+                print 'TypeError: '+str(callset_id)+' - SEGSTART; skipping'
                 continue
 
             try:
                 end = int(float(seg['SEGSTOP']))
             except TypeError:
-                print 'TypeError: '+str(callset_id)+' - SEGSTOP'
+                print 'TypeError: '+str(callset_id)+' - SEGSTOP; skipping'
                 continue
 
             tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-            call = {'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id)}
-
+            call = { 'call_set_id': str(sample['UID']), 'genotype': ['.', '.'], 'info': { 'biosample_id': str(biosample_id) } }
             try:
                 varvalue = float(seg['SEGVALUE'])
             except ValueError:
-                print 'ValueError: '+str(callset_id)+' - VALUE'
+                print 'ValueError: '+str(callset_id)+' - VALUE; continuing'
             else:
-                call['VALUE'] = float(seg['SEGVALUE'])
+                call['info']['segvalue'] = float(seg['SEGVALUE'])
 
             if tag in variants:
-                variants[tag]['CALLS'].append(call)
+                variants[tag]['updated'] = datetime.datetime.utcnow()
+                variants[tag]['calls'].append(call)
                 callno += 1
             else:
-                variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'alternate_bases': str(alternate_bases), 'CALLS':[call]}
+                variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls':[call]}
                 varid += 1
                 callno += 1
 
@@ -75,12 +88,20 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
                 print str(varid)+' variants were created'
                 break
 
-db_variants = db.myvariants
+print str(callno)+' calls were found for '+str(varid)+' variants'
+
+i = 0
+
+db_variants = db.variants
 db_variants.remove()
 for k,v in variants.items():
-	insert_id = db_variants.insert(v)
+    insert_id = db_variants.insert(v)
+    i += 1
+    matchObj = re.search('00000$', str(i))
+    if matchObj:
+        print i
 
-print str(callno)+' calls were found for '+str(varid)+' variants'
+print str(i)+' variants were loaded into the variants collection.'
 
 # with open('variants.json', 'w') as outfile:
 #     json.dump(variants, outfile, indent=4, sort_keys=True, separators=(',', ':'))
