@@ -28,14 +28,22 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             biosample_id = 'AM_BS__'+callset_id
 
         for seg in sample['SEGMENTS_HG18']:
+
+            typevalue = int()
             alternate_bases = ''
             start = int()
             end = int()
             varvalue = float()
-            if seg['SEGTYPE'] < 0:
-                alternate_bases = 'DEL'
-            elif seg['SEGTYPE'] > 0:
-                alternate_bases = 'DUP'
+
+            try:
+                typevalue = int(seg['SEGTYPE'])
+                if seg['SEGTYPE'] < 0:
+                    alternate_bases = 'DEL'
+                elif seg['SEGTYPE'] > 0:
+                    alternate_bases = 'DUP'
+            except TypeError:
+                print 'TypeError: '+str(callset_id)+' - SEGTYPE'
+                continue
 
             try:
                 start = int(float(seg['SEGSTART']))
