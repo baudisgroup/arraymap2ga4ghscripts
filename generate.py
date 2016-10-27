@@ -59,14 +59,13 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
                 continue
 
             tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-            call = { 'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id), 'genotype': ['.', '.'] }
-
+            call = { 'call_set_id': str(sample['UID']), 'genotype': ['.', '.'], 'info': { 'biosample_id': str(biosample_id) } }
             try:
                 varvalue = float(seg['SEGVALUE'])
             except ValueError:
                 print 'ValueError: '+str(callset_id)+' - VALUE; continuing'
             else:
-                call['VALUE'] = float(seg['SEGVALUE'])
+                call['info']['segvalue'] = float(seg['SEGVALUE'])
 
             if tag in variants:
                 variants[tag]['updated'] = datetime.datetime.utcnow()
