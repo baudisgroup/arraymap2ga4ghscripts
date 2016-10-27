@@ -1,5 +1,6 @@
 New cli script gvnc.py is added:
 
+
   This script checks through the given source db collection, generate new
   VARIANTs containing CALLs, and put them in the destination db collection.
 
@@ -22,6 +23,7 @@ Options:
   --dnw                        Do Not Write to the db
   --log FILENAME               Output errors and warnings to a log file
   --help                       Show this message and exit.
+
 
 Pre-requiremnt:
 * sudo pip3 install pymongo
