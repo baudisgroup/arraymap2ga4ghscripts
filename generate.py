@@ -42,19 +42,19 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
                 elif seg['SEGTYPE'] > 0:
                     alternate_bases = 'DUP'
             except TypeError:
-                print 'TypeError: '+str(callset_id)+' - SEGTYPE'
+                print 'TypeError: '+str(callset_id)+' - SEGTYPE; skipping'
                 continue
 
             try:
                 start = int(float(seg['SEGSTART']))
             except TypeError:
-                print 'TypeError: '+str(callset_id)+' - SEGSTART'
+                print 'TypeError: '+str(callset_id)+' - SEGSTART; skipping'
                 continue
 
             try:
                 end = int(float(seg['SEGSTOP']))
             except TypeError:
-                print 'TypeError: '+str(callset_id)+' - SEGSTOP'
+                print 'TypeError: '+str(callset_id)+' - SEGSTOP; skipping'
                 continue
 
             tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
@@ -63,7 +63,7 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
             try:
                 varvalue = float(seg['SEGVALUE'])
             except ValueError:
-                print 'ValueError: '+str(callset_id)+' - VALUE'
+                print 'ValueError: '+str(callset_id)+' - VALUE; continuing'
             else:
                 call['VALUE'] = float(seg['SEGVALUE'])
 
