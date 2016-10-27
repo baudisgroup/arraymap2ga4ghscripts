@@ -37,13 +37,14 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
 
             try:
                 typevalue = int(seg['SEGTYPE'])
-                if seg['SEGTYPE'] < 0:
-                    alternate_bases = 'DEL'
-                elif seg['SEGTYPE'] > 0:
-                    alternate_bases = 'DUP'
             except TypeError:
                 print 'TypeError: '+str(callset_id)+' - SEGTYPE; skipping'
                 continue
+
+            if seg['SEGTYPE'] < 0:
+                alternate_bases = 'DEL'
+            elif seg['SEGTYPE'] > 0:
+                alternate_bases = 'DUP'
 
             try:
                 start = int(float(seg['SEGSTART']))
@@ -69,10 +70,10 @@ for sample in samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1})
 
             if tag in variants:
                 variants[tag]['updated'] = datetime.datetime.utcnow()
-                variants[tag]['CALLS'].append(call)
+                variants[tag]['calls'].append(call)
                 callno += 1
             else:
-                variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'CALLS':[call]}
+                variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls':[call]}
                 varid += 1
                 callno += 1
 
