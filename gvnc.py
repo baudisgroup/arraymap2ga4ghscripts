@@ -46,7 +46,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
         sys.exit()
     samples = db[collection_src]
 
-    # varaint data is stored here
+    # variant data is stored here
     variants = {}
     # counter for demo mode
     sampleno = 1
