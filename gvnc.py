@@ -2,14 +2,14 @@ from pymongo import MongoClient
 import re
 import click
 import sys
+import datetime
 
 # import argparse, sys, json
 
-
 @click.command()
-@click.option('-db', '--dbname', default='arraymap', help='The name of the database, default is arraymap')
-@click.option('-src', '--collection_src', default='samples', help='The collection to read from, default is samples')
-@click.option('-dst', '--collection_dst', default='myvariants', help='The collection to write into, default is myvariants')
+@click.option('-db', '--dbname', default='arraymap', help='The name of the database, default is "arraymap"')
+@click.option('-src', '--collection_src', default='samples', help='The collection to read from, default is "samples"')
+@click.option('-dst', '--collection_dst', default='variants', help='The collection to write into, default is "variants"')
 @click.option('--demo', default=0, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
 @click.option('--log',  type=click.File('w'), help='Output errors and warnings to a log file')
@@ -112,44 +112,53 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
                     end = int()
                     varvalue = float()
 
+                    try:
+                        typevalue = int(seg['SEGTYPE'])
+                    except TypeError:
+                        if log is not None:
+                            click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is not INT', file=log)
+                        continue
+
                     if int(seg['SEGTYPE']) < 0:
                         alternate_bases = 'DEL'
                     elif int(seg['SEGTYPE']) > 0:
                         alternate_bases = 'DUP'
 
-                    if log is not None:
-                        # uncomment is if want to find all SEGTYPEs that are not int
-                        # if type(seg['SEGTYPE']) is not int:
-                        #     click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is not INT', file=log)
-                        try:
-                            start = int(float(seg['SEGSTART']))
-                        except TypeError:
+                    try:
+                        start = int(float(seg['SEGSTART']))
+                    except TypeError:
+                        if log is not None:
                             click.echo('TypeError: '+str(callset_id)+' - SEGSTART', file=log)
-                            continue
+                        continue
 
-                        try:
-                            end = int(float(seg['SEGSTOP']))
-                        except TypeError:
+                    try:
+                        end = int(float(seg['SEGSTOP']))
+                    except TypeError:
+                        if log is not None:
                             click.echo('TypeError: '+str(callset_id)+' - SEGSTOP', file=log)
-                            continue
+                        continue
 
-                        try:
-                            varvalue = float(seg['SEGVALUE'])
-                        except ValueError:
-                            click.echo('ValueError: '+str(callset_id)+' - VALUE', file=log)
-                            continue
                     #create a tag for each segment
                     tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-                    call = {'call_set_id': str(sample['UID']), 'biosample_id': str(biosample_id), 'value': float(seg['SEGVALUE'])}
+                    call = { 'call_set_id': str(sample['UID']), 'genotype': ['.', '.'], 'info': { 'biosample_id': str(biosample_id) } }
+
+                    try:
+                        varvalue = float(seg['SEGVALUE'])
+                    except ValueError:
+                        if log is not None:
+                            click.echo('ValueError: '+str(callset_id)+' - VALUE', file=log)
+                        # continue
+                    else:
+                        call['info']['segvalue'] = float(seg['SEGVALUE'])
 
                     if tag in variants:
                     	#exists same tag, append the segment
-                        variants[tag]['CALLS'].append(call)
+                        variants[tag]['updated'] = datetime.datetime.utcnow()
+                        variants[tag]['calls'].append(call)
                         callno += 1
                     else:
                     	#new tag, create new variant
-                        variants[tag] = {'id': str(varid), 'start': start, 'end': end, 'reference_name': str(
-                            seg['CHRO']), 'alternate_bases': str(alternate_bases), 'CALLS': [call]}
+                        variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls':[call]}
                         varid += 1
                         callno += 1
                         no_uniqueSegments += 1
@@ -168,11 +177,11 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
     ######################
     click.echo()
     for k, var in variants.items():
-        numcall = len(var['CALLS'])
+        numcall = len(var['calls'])
         if numcall > 1:
             no_variantMultSeg += 1
         else:
-            no_variantOneSeg += 1    
+            no_variantOneSeg += 1
     click.echo('*'*60)
     click.echo(str(no_samples) + '\t samples processed from db: ' + dbname + '.' + collection_src)
     click.echo(str(no_validSamples) + '\t valid samples found')
@@ -205,5 +214,3 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
 #main
 if __name__ == '__main__':
     cli()
-
-
