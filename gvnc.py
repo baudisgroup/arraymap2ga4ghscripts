@@ -152,12 +152,12 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
                         call['info']['segvalue'] = float(seg['SEGVALUE'])
 
                     if tag in variants:
-                    	#exists same tag, append the segment
+                        #exists same tag, append the segment
                         variants[tag]['updated'] = datetime.datetime.utcnow()
                         variants[tag]['calls'].append(call)
                         callno += 1
                     else:
-                    	#new tag, create new variant
+                        #new tag, create new variant
                         variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls':[call]}
                         varid += 1
                         callno += 1
@@ -202,13 +202,30 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
     # write to the db
     ######################
     if not dnw:
-        db_variants = db[collection_dst]
-        db_variants.remove()
-        with click.progressbar(variants.items(), label='Writing Database',
-                               fill_char=click.style('>', fg='green')) as bar:
-            for k, v in bar:
-                insert_id = db_variants.insert(v)
-    click.echo()
+
+    	#Commond line prompt to confirm the overwriting of db
+        click.echo('New data will overwrite collection: '+collection_dst+'.')
+        while True:
+            msg = input('Do you want to proceed? Please type y/n: ')
+            if msg is 'n':
+                print('Terminating: Data is not written into the db. \n')
+                sys.exit()
+            elif msg is 'y':
+
+
+            	#writing db
+                db_variants = db[collection_dst]
+                db_variants.remove()
+                with click.progressbar(variants.items(), label='Writing Database',
+                                       fill_char=click.style('>', fg='green')) as bar:
+                    for k, v in bar:
+                        insert_id = db_variants.insert(v)                
+                break
+
+
+            else:
+                print('invalid input')        
+        click.echo()
 
 
 #main
