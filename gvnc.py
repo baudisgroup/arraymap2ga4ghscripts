@@ -12,8 +12,9 @@ import datetime
 @click.option('-dst', '--collection_dst', default='variants', help='The collection to write into, default is "variants"')
 @click.option('--demo', default=0, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
+@click.option('--excluded', is_flag=True, help='Include also "excluded" status samples when processing')
 @click.option('--log',  type=click.File('w'), help='Output errors and warnings to a log file')
-def cli(dbname, collection_src, collection_dst, demo, dnw, log):
+def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     """
     This script checks through the given source db collection,
     generate new VARIANTs containing CALLs, and put them in the
@@ -72,12 +73,21 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
         if item is not None:
             return str(no_samples+1)+' samples processed'
 
+    ######################
+    # defining the query to in- or exclude "excluded" samples
+    ######################
+    mongoq = {'STATUS':{'$not':re.compile('exclude')}}
+    if excluded:
+        mongoq = {}
+    samplecount = samples.find(mongoq).count()
+    click.echo()
+    click.echo(str(samplecount)+' samples will be processed (--excluded: '+str(excluded)+')')
 
     # draw the processing bar
     click.echo()
-    with click.progressbar(samples.find({}, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1}), label='Processing',
-                           fill_char=click.style('*', fg='green'), item_show_func=show_counter) as bar:
 
+    with click.progressbar(samples.find(mongoq, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1}), label='Processing',
+                           fill_char=click.style('*', fg='green'), item_show_func=show_counter) as bar:
         ######################
         #scan every sample
         ######################
@@ -184,11 +194,11 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
             no_variantOneSeg += 1
     click.echo('*'*60)
     click.echo(str(no_samples) + '\t samples processed from db: ' + dbname + '.' + collection_src)
-    click.echo(str(no_validSamples) + '\t valid samples found')
+    click.echo(str(no_validSamples) + '\t samples had at least one segment')
     click.echo(str(no_segments) + '\t segments(calls) found')
-    click.echo(str(no_variantOneSeg) + '\t segments are along ('+ str(no_variantOneSeg) +
+    click.echo(str(no_variantOneSeg) + '\t segments are single events in a sample ('+ str(no_variantOneSeg) +
                '/'+str(no_segments)+' = ' + str(round(no_variantOneSeg/no_segments*100,2)) +'%)')
-    click.echo(str(no_segments-no_variantOneSeg) + '\t segments have companies ('+ str(no_segments-no_variantOneSeg) +
+    click.echo(str(no_segments-no_variantOneSeg) + '\t segments have company ('+ str(no_segments-no_variantOneSeg) +
                '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100,2)) +'%)')
     click.echo(str(no_uniqueSegments) + '\t variants created')
     click.echo(str(no_variantOneSeg) + '\t variants have a single call ('+ str(no_variantOneSeg) +
@@ -219,12 +229,12 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, log):
                 with click.progressbar(variants.items(), label='Writing Database',
                                        fill_char=click.style('>', fg='green')) as bar:
                     for k, v in bar:
-                        insert_id = db_variants.insert(v)                
+                        insert_id = db_variants.insert(v)
                 break
 
 
             else:
-                print('invalid input')        
+                print('invalid input')
         click.echo()
 
 
