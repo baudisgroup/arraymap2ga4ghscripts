@@ -82,7 +82,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
 
     # draw the processing bar
     click.echo()
-    with click.progressbar(samples.find({}), label='Processing',
+    with click.progressbar(samples.find(), label='Processing',
                            fill_char=click.style('*', fg='green'), item_show_func=show_counter) as bar:
 
         ######################
@@ -104,42 +104,11 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                 biosample_name = sample['BIOSAMPLEID']
 
 
-                ######################
-                #check and get attributes
-                ######################
-                # try:
-                #     diagnosistext = sample['DIAGNOSISTEXT']
-                # except KeyError:
-                #     diagnosistext = ''
-                #     if log is not None:
-                #         click.echo('KeyError: '+str(callset_name)+' has no DIAGNOSISTEXT', file=log)
-                #     continue
-                # try:
-                #     pubmed_id = sample['PMID']
-                # except KeyError:
-                #     pubmed_id = ''
-                #     if log is not None:
-                #         click.echo('KeyError: '+str(callset_name)+' has no PMID', file=log)
-                #     continue
-                # try:
-                #     icd_morphology = sample['ICDMORPHOLOGY']
-                # except KeyError:
-                #     icd_morphology = ''
-                #     if log is not None:
-                #         click.echo('KeyError: '+str(callset_name)+' has no ICDMORPHOLOGY', file=log)
-                #     continue
-                diagnosistext = 
-                pubmed_id = get_attribute('PMID',sample)
-                icd_morphology = get_attribute('ICDMORPHOLOGY',sample)
-
-
-
                 # check if BIOSAMPLEID has string & use this as 'biosample_name';
                 # if not, create biosample_name as 'AM_BS__' + callset_name
                 matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
                 if not matchObj:
                     biosample_name = 'AM_BS__'+callset_name
-
 
 
                 ############################################
@@ -155,9 +124,19 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                     # new biosample_name, create new biosample
                     biosamples[biosample_name] = {'characteristics': '', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '', 
                         'name': biosample_name, 
-                        'description': diagnosistext, 
-                        'info': {'pubmed_id': pubmed_id, 
-                            'icdo3_morphology': icd_morphology, 
+                        'description': get_attribute('DIAGNOSISTEXT',sample), 
+                        'info': {'pubmed_id': get_attribute('PMID',sample), 
+                            'icdo3_morphology': get_attribute('ICDMORPHOLOGY',sample), 
+                            'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE',sample),
+                            'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
+                            'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
+                            'age': get_attribute('AGE', sample),
+                            'city': get_attribute('CITY', sample),
+                            'county': get_attribute('COUNTRY', sample),
+                            'death': get_attribute('DEATH',sample),
+                            'geo_lat': get_attribute('GEOLAT', sample),
+                            'get_long': get_attribute('GEOLONG', sample),
+                            'sex': get_attribute('SEX', sample),
                             'redirected_to': ''}}
                     no_biosamples += 1
 
