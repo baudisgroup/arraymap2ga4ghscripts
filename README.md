@@ -1,6 +1,6 @@
 # gbnc.py
 New cli script to generate BIOSAMPLEs and CALLSETs.
-Usage is very similar to gvnc.py except two destination collections are needed other than one:
+Usage is very similar to gvnc.py except two destination collections are needed instead of one:
 * '-dstb, --collection_dst_biosamples TEXT      The collection to write into, default is "biosamples"'
 * '-dstc, --collection_dst_callsets TEXT        The collection to write into, default is "callsets"'
 
