@@ -124,6 +124,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                         click.echo('Duplicate biosample_name: '+biosample_name, file=log)
                 else:
                     # new biosample_name, create new biosample
+                    # TODO: ISO age
                     biosamples[biosample_name] = {'characteristics': '', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
                         'name': biosample_name,
                         'description': get_attribute('DIAGNOSISTEXT',sample),
@@ -132,12 +133,13 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                             'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE',sample),
                             'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
                             'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
+                            'tnm': get_attribute('TNM', sample),
                             'age': get_attribute('AGE', sample),
                             'city': get_attribute('CITY', sample),
-                            'county': get_attribute('COUNTRY', sample),
+                            'country': get_attribute('COUNTRY', sample),
                             'death': get_attribute('DEATH',sample),
                             'geo_lat': get_attribute('GEOLAT', sample),
-                            'get_long': get_attribute('GEOLONG', sample),
+                            'geo_long': get_attribute('GEOLONG', sample),
                             'sex': get_attribute('SEX', sample),
                             'redirected_to': ''}}
                     no_biosamples += 1
@@ -148,7 +150,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                     if log is not None:
                         click.echo('Duplicate callset_name:'+callset_name, file=log)
                 else:
-                    callsets[callset_name] = {'name': callset_name,  'bio_sample_name': biosample_name,
+                    callsets[callset_name] = {'name': callset_name,  'biosample_name': biosample_name,
                                             'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow()}
                     no_callsets += 1
 
