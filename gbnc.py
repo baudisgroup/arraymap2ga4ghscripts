@@ -43,9 +43,11 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
         sys.exit()
     if collection_dst_biosamples not in db.collection_names():
         print(collection_dst_biosamples + ' does not exist')
+        print('You have to create it first with \"mongo ' + dbname + ' --eval \'db.createCollection("'+collection_dst_biosamples+'")\'\"')
         sys.exit()
     if collection_dst_callsets not in db.collection_names():
         print(collection_dst_callsets + ' does not exist')
+        print('You have to create it first with \"mongo ' + dbname + ' --eval \'db.createCollection("'+collection_dst_callsets+'")\'\"')
         sys.exit()
     samples = db[collection_src]
 
@@ -122,11 +124,11 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                         click.echo('Duplicate biosample_name: '+biosample_name, file=log)
                 else:
                     # new biosample_name, create new biosample
-                    biosamples[biosample_name] = {'characteristics': '', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '', 
-                        'name': biosample_name, 
-                        'description': get_attribute('DIAGNOSISTEXT',sample), 
-                        'info': {'pubmed_id': get_attribute('PMID',sample), 
-                            'icdo3_morphology': get_attribute('ICDMORPHOLOGY',sample), 
+                    biosamples[biosample_name] = {'characteristics': '', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
+                        'name': biosample_name,
+                        'description': get_attribute('DIAGNOSISTEXT',sample),
+                        'info': {'pubmed_id': get_attribute('PMID',sample),
+                            'icdo3_morphology': get_attribute('ICDMORPHOLOGY',sample),
                             'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE',sample),
                             'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
                             'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
@@ -192,7 +194,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                                        fill_char=click.style('>', fg='green')) as bar:
                     for k, v in bar:
                         insert_id = db_biosamples.insert(v)
-                
+
                 db_callsets = db[collection_dst_callsets]
                 db_callsets.remove()
                 with click.progressbar(callsets.items(), label='Writing Database:' + collection_dst_callsets,
