@@ -3,6 +3,7 @@ import re
 import click
 import sys
 import datetime
+from bson import ObjectId
 
 
 @click.command()
@@ -10,10 +11,11 @@ import datetime
 @click.option('-src', '--collection_src', default='samples', help='The collection to read from, default is "samples"')
 @click.option('-dstb', '--collection_dst_biosamples', default='biosamples', help='The collection to write into, default is "biosamples"')
 @click.option('-dstc', '--collection_dst_callsets', default='callsets', help='The collection to write into, default is "callsets"')
-@click.option('--demo', default=0, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
+@click.option('-d', '--demo', default=0, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
-@click.option('--log',  type=click.File('w'), help='Output errors and warnings to a log file')
-def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callsets, demo, dnw, log):
+@click.option('-l', '--log',  type=click.File('w'), help='Output errors and warnings to a log file')
+@click.option('-s', '--status',  default='-exclude', help='Filter by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude.')
+def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callsets, demo, dnw, log, status):
     """
     This script checks through the given source db collection,
     generate new BIOSAMPLEs and CALLSETs, and put them in the
@@ -43,17 +45,42 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
         sys.exit()
     if collection_dst_biosamples not in db.collection_names():
         print(collection_dst_biosamples + ' does not exist')
-        print('You have to create it first with \"mongo ' + dbname + ' --eval \'db.createCollection("'+collection_dst_biosamples+'")\'\"')
+        print('You have to create it first with \"mongo ' + dbname +
+              ' --eval \'db.createCollection("'+collection_dst_biosamples+'")\'\"')
         sys.exit()
     if collection_dst_callsets not in db.collection_names():
         print(collection_dst_callsets + ' does not exist')
-        print('You have to create it first with \"mongo ' + dbname + ' --eval \'db.createCollection("'+collection_dst_callsets+'")\'\"')
+        print('You have to create it first with \"mongo ' + dbname +
+              ' --eval \'db.createCollection("'+collection_dst_callsets+'")\'\"')
         sys.exit()
+
     samples = db[collection_src]
+
+    ######################
+    # Validate --status input
+    ######################
+    try:
+        status_op = status[0]
+    except IndexError:
+        click.echo('The length of --status paramter is invalid.')
+        sys.exit()
+    click.echo()
+    if status_op is '+':
+        qcondition = {'STATUS': re.compile(status[1:])}
+        click.echo(str(samples.find(qcondition).count()) +
+                   ' samples will be processed. (With STATUS containing: ' + status[1:] + ')')
+    elif status_op is '-':
+        qcondition = {'STATUS': {'$not': re.compile(status[1:])}}
+        click.echo(str(samples.find(qcondition).count()) +
+                   ' samples will be processed. (With STATUS NOT containing: ' + status[1:] + ')')
+    else:
+        click.echo('The first char of --status must be "+" or "-".')
+        sys.exit()
 
     # BIOSAMPLE and CALLSET data are stored here
     biosamples = {}
     callsets = {}
+    variantset_id = 'AM_VS_HG18'
     # counter for demo mode
     sampleno = 1
 
@@ -72,7 +99,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
         if item is not None:
             return str(no_samples+1)+' samples processed'
 
-    def get_attribute(name,sample):
+    def get_attribute(name, sample):
         try:
             val = sample[name]
         except KeyError:
@@ -81,10 +108,9 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                 click.echo('KeyError: '+str(sample['_id'])+' has no '+name, file=log)
         return val
 
-
     # draw the processing bar
     click.echo()
-    with click.progressbar(samples.find(), label='Processing',
+    with click.progressbar(samples.find(qcondition), label='Processing',
                            fill_char=click.style('*', fg='green'), item_show_func=show_counter) as bar:
 
         ######################
@@ -99,58 +125,55 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                 if matchObj:
                     click.echo(no_samples, file=log)
 
-            # only samples with none-empty SEGMENTS_HG18 are valid and worthy checking
-            if ('SEGMENTS_HG18' in sample) and (sample['SEGMENTS_HG18'] is not None) and (len(sample['SEGMENTS_HG18']) > 1):
-                no_validSamples += 1
-                callset_name = sample['UID']
-                biosample_name = sample['BIOSAMPLEID']
+            no_validSamples += 1
+            callset_id = 'AM_CS_'+sample['UID']
+            biosample_id = 'AM_BS_'+sample['UID']
 
-
-                # check if BIOSAMPLEID has string & use this as 'biosample_name';
-                # if not, create biosample_name as 'AM_BS__' + callset_name
-                matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
-                if not matchObj:
-                    biosample_name = 'AM_BS__'+callset_name
-
-
-                ############################################
-                #check and generate biosamples and callsets
-                ############################################
-
+            ############################################
+            # check and generate biosamples and callsets
+            ############################################
+            #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
+            if (len(sample) > 50): 
                 # check and generate biosample
-                if biosample_name in biosamples:
-                    # if same biosample_name exists, report an error
+                if biosample_id in biosamples:
+                    # if same biosample_id exists, report an error
                     if log is not None:
-                        click.echo('Duplicate biosample_name: '+biosample_name, file=log)
+                        click.echo('Duplicate biosample_id: '+biosample_id, file=log)
                 else:
-                    # new biosample_name, create new biosample
+                    # new biosample_id, create new biosample
                     # TODO: ISO age
-                    biosamples[biosample_name] = {'characteristics': '', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
-                        'name': biosample_name,
-                        'description': get_attribute('DIAGNOSISTEXT',sample),
-                        'info': {'pubmed_id': get_attribute('PMID',sample),
-                            'icdo3_morphology': get_attribute('ICDMORPHOLOGY',sample),
-                            'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE',sample),
-                            'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
-                            'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
-                            'tnm': get_attribute('TNM', sample),
-                            'age': get_attribute('AGE', sample),
-                            'city': get_attribute('CITY', sample),
-                            'country': get_attribute('COUNTRY', sample),
-                            'death': get_attribute('DEATH',sample),
-                            'geo_lat': get_attribute('GEOLAT', sample),
-                            'geo_long': get_attribute('GEOLONG', sample),
-                            'sex': get_attribute('SEX', sample),
-                            'redirected_to': ''}}
+                    biosamples[biosample_id] = {'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
+                                                'id': biosample_id, 'description': get_attribute('DIAGNOSISTEXT', sample),
+                                                'info': {
+                                                    'pubmed_id': get_attribute('PMID', sample),
+                                                    'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
+                                                    'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE', sample),
+                                                    'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
+                                                    'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
+                                                    'tnm': get_attribute('TNM', sample),
+                                                    'age': get_attribute('AGE', sample),
+                                                    'city': get_attribute('CITY', sample),
+                                                    'country': get_attribute('COUNTRY', sample),
+                                                    'death': get_attribute('DEATH', sample),
+                                                    'geo_lat': get_attribute('GEOLAT', sample),
+                                                    'geo_long': get_attribute('GEOLONG', sample),
+                                                    'sex': get_attribute('SEX', sample),
+                                                    'redirected_to': ''},
+                                                'characteristics': {
+                                                    'diseases': [
+                                                        {'termId': 'ICDO:'+str(get_attribute('ICDMORPHOLOGYCODE', sample)),
+                                                         'term': get_attribute('ICDMORPHOLOGY', sample)},
+                                                        {'termId': 'ICDO:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)), 'term': get_attribute('ICDTOPOGRAPHY', sample)}]
+                    }}
                     no_biosamples += 1
 
                 # check and generate callset
-                if callset_name in callsets:
-                    # if same callset_name exists, report an error
+                if callset_id in callsets:
+                    # if same callset_id exists, report an error
                     if log is not None:
-                        click.echo('Duplicate callset_name:'+callset_name, file=log)
+                        click.echo('Duplicate callset_id:'+callset_id, file=log)
                 else:
-                    callsets[callset_name] = {'name': callset_name,  'biosample_name': biosample_name,
+                    callsets[callset_id] = {'id': callset_id,  'biosample_id': biosample_id, 'variant_set_id': variantset_id,
                                             'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow()}
                     no_callsets += 1
 
@@ -181,7 +204,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
     if not dnw:
 
         # Commond line prompt to confirm the overwriting of db
-        click.echo('New data will overwrite collections: '+collection_dst_biosamples + ' and ' + collection_dst_callsets +'.')
+        click.echo('New data will overwrite collections: '+collection_dst_biosamples + ' and ' + collection_dst_callsets + '.')
         while True:
             msg = input('Do you want to proceed? Please type y/n: ')
             if msg is 'n':

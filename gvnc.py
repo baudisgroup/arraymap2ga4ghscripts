@@ -6,6 +6,7 @@ import datetime
 
 # import argparse, sys, json
 
+
 @click.command()
 @click.option('-db', '--dbname', default='arraymap', help='The name of the database, default is "arraymap"')
 @click.option('-src', '--collection_src', default='samples', help='The collection to read from, default is "samples"')
@@ -40,15 +41,17 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
         sys.exit()
     db = client[dbname]
     if collection_src not in db.collection_names():
-        print(collection_src +' does not exist')
+        print(collection_src + ' does not exist')
         sys.exit()
     if collection_dst not in db.collection_names():
-        print(collection_dst +' does not exist')
+        print(collection_dst + ' does not exist')
         sys.exit()
     samples = db[collection_src]
 
     # variant data is stored here
     variants = {}
+    variantset_id = 'AM_VS_HG18'
+
     # counter for demo mode
     sampleno = 1
 
@@ -76,7 +79,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     ######################
     # defining the query to in- or exclude "excluded" samples
     ######################
-    mongoq = {'STATUS':{'$not':re.compile('exclude')}}
+    mongoq = {'STATUS': {'$not': re.compile('exclude')}}
     if excluded:
         mongoq = {}
     samplecount = samples.find(mongoq).count()
@@ -89,7 +92,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     with click.progressbar(samples.find(mongoq, {'UID': 1, 'BIOSAMPLEID': 1, 'SEGMENTS_HG18': 1}), label='Processing',
                            fill_char=click.style('*', fg='green'), item_show_func=show_counter) as bar:
         ######################
-        #scan every sample
+        # scan every sample
         ######################
         for sample in bar:
             no_samples += 1
@@ -103,17 +106,19 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
             # only simples with none-empty SEGMENTS_HG18 is valid and worthy checking
             if ('SEGMENTS_HG18' in sample) and (sample['SEGMENTS_HG18'] is not None) and (len(sample['SEGMENTS_HG18']) > 1):
                 no_validSamples += 1
-                callset_id = sample['UID']
-                biosample_id = sample['BIOSAMPLEID']
+
+                # Generate callset id
+                callset_id = 'AM_CS_'+sample['UID']
+                #biosample_id = sample['BIOSAMPLEID']
 
                 # check if BIOSAMPLEID has string & use this as 'biosample_id';
                 # if not, create biosample_id as 'AM_BS__' + callset_id
-                matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
-                if not matchObj:
-                    biosample_id = 'AM_BS__'+callset_id
+                # matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
+                # if not matchObj:
+                #     biosample_id = 'AM_BS__'+callset_id
 
                 ######################
-                #scan every segment
+                # scan every segment
                 ######################
                 for seg in sample['SEGMENTS_HG18']:
                     no_segments += 1
@@ -148,27 +153,28 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                             click.echo('TypeError: '+str(callset_id)+' - SEGSTOP', file=log)
                         continue
 
-                    #create a tag for each segment
+                    # create a tag for each segment
                     tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
-                    call = { 'call_set_id': str(sample['UID']), 'genotype': ['.', '.'], 'info': { 'biosample_id': str(biosample_id) } }
+                    call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {}}
 
                     try:
                         varvalue = float(seg['SEGVALUE'])
                     except ValueError:
                         if log is not None:
-                            click.echo('ValueError: '+str(callset_id)+' - VALUE', file=log)
+                            click.echo('ValueError: '+str(callset_id)+' - SEGVALUE', file=log)
                         # continue
                     else:
                         call['info']['segvalue'] = float(seg['SEGVALUE'])
 
                     if tag in variants:
-                        #exists same tag, append the segment
+                        # exists same tag, append the segment
                         variants[tag]['updated'] = datetime.datetime.utcnow()
                         variants[tag]['calls'].append(call)
                         callno += 1
                     else:
-                        #new tag, create new variant
-                        variants[tag] = { 'id': str(varid), 'start': start, 'end': end, 'reference_name': str(seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls':[call]}
+                        # new tag, create new variant
+                        variants[tag] = {'id': 'AM_V_'+str(varid), 'start': start, 'end': end, 'variant_set_id': variantset_id, 'reference_name': str(
+                            seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls': [call]}
                         varid += 1
                         callno += 1
                         no_uniqueSegments += 1
@@ -196,15 +202,15 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     click.echo(str(no_samples) + '\t samples processed from db: ' + dbname + '.' + collection_src)
     click.echo(str(no_validSamples) + '\t samples had at least one segment')
     click.echo(str(no_segments) + '\t segments(calls) found')
-    click.echo(str(no_variantOneSeg) + '\t segments are single events in a sample ('+ str(no_variantOneSeg) +
-               '/'+str(no_segments)+' = ' + str(round(no_variantOneSeg/no_segments*100,2)) +'%)')
-    click.echo(str(no_segments-no_variantOneSeg) + '\t segments have company ('+ str(no_segments-no_variantOneSeg) +
-               '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100,2)) +'%)')
+    click.echo(str(no_variantOneSeg) + '\t segments are single events in a sample (' + str(no_variantOneSeg) +
+               '/'+str(no_segments)+' = ' + str(round(no_variantOneSeg/no_segments*100, 2)) + '%)')
+    click.echo(str(no_segments-no_variantOneSeg) + '\t segments have company (' + str(no_segments-no_variantOneSeg) +
+               '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100, 2)) + '%)')
     click.echo(str(no_uniqueSegments) + '\t variants created')
-    click.echo(str(no_variantOneSeg) + '\t variants have a single call ('+ str(no_variantOneSeg) +
-               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantOneSeg/no_uniqueSegments*100,2)) +'%)')
+    click.echo(str(no_variantOneSeg) + '\t variants have a single call (' + str(no_variantOneSeg) +
+               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantOneSeg/no_uniqueSegments*100, 2)) + '%)')
     click.echo(str(no_variantMultSeg) + '\t variants have multiple calls (' + str(no_variantMultSeg) +
-               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantMultSeg/no_uniqueSegments*100,2)) +'%)')
+               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantMultSeg/no_uniqueSegments*100, 2)) + '%)')
     click.echo('*'*60)
     click.echo()
 
@@ -213,7 +219,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     ######################
     if not dnw:
 
-    	#Commond line prompt to confirm the overwriting of db
+        # Commond line prompt to confirm the overwriting of db
         click.echo('New data will overwrite collection: '+collection_dst+'.')
         while True:
             msg = input('Do you want to proceed? Please type y/n: ')
@@ -222,8 +228,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                 sys.exit()
             elif msg is 'y':
 
-
-            	#writing db
+                # writing db
                 db_variants = db[collection_dst]
                 db_variants.remove()
                 with click.progressbar(variants.items(), label='Writing Database',
@@ -232,12 +237,11 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                         insert_id = db_variants.insert(v)
                 break
 
-
             else:
                 print('invalid input')
         click.echo()
 
 
-#main
+# main
 if __name__ == '__main__':
     cli()
