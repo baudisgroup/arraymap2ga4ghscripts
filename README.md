@@ -1,3 +1,26 @@
+# Latest update:
+## general modifications:
+>1. variant, biosample and callset are all following the same naming convention.
+2. they all have an unique "id" attribute generated as AM_V_"UID", AM_BS_"UID", and AM_CS_"UID".
+3. "UID" is from data collection "samples" in database "arraymap".
+4. all other attirbutes of them are exactly following the GA4GH schema.
+
+## gvnc.py:
+>1. calls do not store biosample_id anymore, it can be retrieved through callset.
+2. biosample_id of a variant is always generated now, instead of checking existence and generating when absent.
+
+## gbnc.py:
+>1. new option:'-s', '--status',  default='-exclude'
+2. it filters the data collection by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude. 
+3. it accepts regular expression, eg: "-s include\\|\^NA" as an option from cmd.
+4. biosample_id is always generated now, instead of checking existence and generating when absent.
+5. characteristics of biosample is implemented. Right now, it simply captures ICD information.
+6. duplicated "UID" (duplicated biosample_id) problem is temporarily resolved by only including simples with more than 50 attributes.
+7. shortnames '-d' and '-l' for options '--demo' and '--log' are provided.
+
+
+# Previous updates:
+---
 # gbnc.py
 New cli script to generate BIOSAMPLEs and CALLSETs.
 Usage is very similar to gvnc.py except two destination collections are needed instead of one:
