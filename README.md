@@ -12,7 +12,7 @@
 ## gbnc.py:
 >1. new option:'-s', '--status',  default='-exclude'
 2. it filters the data collection by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude. 
-3. it accepts regular expression, eg: "-s include\\|\^NA" as an option from cmd.
+3. it accepts regular expression, eg: "-include\\|\^NA" as an option from cmd.
 4. biosample_id is always generated now, instead of checking existence and generating when absent.
 5. characteristics of biosample is implemented. Right now, it simply captures ICD information.
 6. duplicated "UID" (duplicated biosample_id) problem is temporarily resolved by only including simples with more than 50 attributes.
