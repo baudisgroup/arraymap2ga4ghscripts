@@ -145,8 +145,13 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
                     icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
-                    biosamples[biosample_id] = {'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
-                                                'id': biosample_id, 'description': get_attribute('DIAGNOSISTEXT', sample),
+                    biosamples[biosample_id] = {
+                                                'created': datetime.datetime.utcnow(),
+                                                'updated': datetime.datetime.utcnow(),
+                                                'individual_id': '',
+                                                'id': biosample_id,
+                                                'name': biosample_id,
+                                                'description': get_attribute('DIAGNOSISTEXT', sample),
                                                 'info': {
                                                     'pubmed_id': get_attribute('PMID', sample),
                                                     'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
