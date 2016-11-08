@@ -142,6 +142,9 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                 else:
                     # new biosample_id, create new biosample
                     # TODO: ISO age
+                    icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
+                    icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
+                    snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
                     biosamples[biosample_id] = {'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'individual_id': '',
                                                 'id': biosample_id, 'description': get_attribute('DIAGNOSISTEXT', sample),
                                                 'info': {
@@ -154,17 +157,36 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                                                     'age': get_attribute('AGE', sample),
                                                     'city': get_attribute('CITY', sample),
                                                     'country': get_attribute('COUNTRY', sample),
-                                                    'death': get_attribute('DEATH', sample),
                                                     'geo_lat': get_attribute('GEOLAT', sample),
                                                     'geo_long': get_attribute('GEOLONG', sample),
                                                     'sex': get_attribute('SEX', sample),
+                                                    'death': get_attribute('DEATH', sample),
+                                                    'followup_months': get_attribute('FOLLOWUP', sample),
                                                     'redirected_to': ''},
                                                 'characteristics': {
-                                                    'diseases': [ { 'description': get_attribute('DIAGNOSISTEXT', sample), 'ontologyTerms': [
-                                                        {'termId': 'ICDO:'+str(get_attribute('ICDMORPHOLOGYCODE', sample)),
-                                                         'term': get_attribute('ICDMORPHOLOGY', sample)},
-                                                        {'termId': 'ICDO:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)), 'term': get_attribute('ICDTOPOGRAPHY', sample)} ] } ]
-                    }}
+                                                    'diseases': [
+                                                        {
+                                                            'description': get_attribute('DIAGNOSISTEXT', sample),
+                                                            'ontologyTerms': [
+                                                                {
+                                                                    'termId': snomedcode_termid,
+                                                                    'term': get_attribute('ICDMORPHOLOGY', sample)
+                                                                },
+                                                                {
+                                                                    'termId': icdmcode_termid,
+                                                                    'term': get_attribute('ICDMORPHOLOGY', sample)
+                                                                },
+                                                                {
+                                                                    'termId': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
+                                                                    'term': get_attribute('ICDTOPOGRAPHY', sample)
+                                                                }
+                                                            ],
+                                                            'negatedOntologyTerms': []
+                                                        }
+                                                    ],
+                                                    'phenotypes': []
+                                                }
+                    }
                     no_biosamples += 1
 
                 # check and generate callset
