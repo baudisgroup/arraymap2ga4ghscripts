@@ -133,7 +133,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
             # check and generate biosamples and callsets
             ############################################
             #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
-            if (len(sample) > 50): 
+            if (len(sample) > 50):
                 # check and generate biosample
                 if biosample_id in biosamples:
                     # if same biosample_id exists, report an error
@@ -160,10 +160,10 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                                                     'sex': get_attribute('SEX', sample),
                                                     'redirected_to': ''},
                                                 'characteristics': {
-                                                    'diseases': [
+                                                    'diseases': [ { 'description': get_attribute('DIAGNOSISTEXT', sample), 'ontologyTerms': [
                                                         {'termId': 'ICDO:'+str(get_attribute('ICDMORPHOLOGYCODE', sample)),
                                                          'term': get_attribute('ICDMORPHOLOGY', sample)},
-                                                        {'termId': 'ICDO:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)), 'term': get_attribute('ICDTOPOGRAPHY', sample)}]
+                                                        {'termId': 'ICDO:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)), 'term': get_attribute('ICDTOPOGRAPHY', sample)} ] } ]
                     }}
                     no_biosamples += 1
 

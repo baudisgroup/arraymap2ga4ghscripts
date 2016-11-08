@@ -111,7 +111,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                 callset_id = 'AM_CS_'+sample['UID']
                 #biosample_id = sample['BIOSAMPLEID']
 
-                # check if BIOSAMPLEID has string & use this as 'biosample_id';
+                # DEPRECATED: check if BIOSAMPLEID has string & use this as 'biosample_id';
                 # if not, create biosample_id as 'AM_BS__' + callset_id
                 # matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
                 # if not matchObj:
@@ -138,6 +138,10 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                         alternate_bases = 'DEL'
                     elif int(seg['SEGTYPE']) > 0:
                         alternate_bases = 'DUP'
+                    elif int(seg['SEGTYPE']) == 0:
+                        if log is not None:
+                            click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is "0"', file=log)
+                        continue
 
                     try:
                         start = int(float(seg['SEGSTART']))
