@@ -3,6 +3,7 @@ import re
 import click
 import sys
 import datetime
+import string
 from bson import ObjectId
 
 
@@ -128,6 +129,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
             no_validSamples += 1
             callset_id = 'AM_CS_'+sample['UID']
             biosample_id = 'AM_BS_'+sample['UID']
+            individual_id = 'PGIND_'+sample['UID']
 
             ############################################
             # check and generate biosamples and callsets
@@ -145,10 +147,12 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
                     icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
+                    country = string.capwords(get_attribute('COUNTRY', sample))
+                    country = re.sub('USA', 'United States', country)
                     biosamples[biosample_id] = {
                                                 'created': datetime.datetime.utcnow(),
                                                 'updated': datetime.datetime.utcnow(),
-                                                'individual_id': '',
+                                                'individual_id': individual_id,
                                                 'id': biosample_id,
                                                 'name': biosample_id,
                                                 'description': get_attribute('DIAGNOSISTEXT', sample),
@@ -161,7 +165,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                                                     'tnm': get_attribute('TNM', sample),
                                                     'age': get_attribute('AGE', sample),
                                                     'city': get_attribute('CITY', sample),
-                                                    'country': get_attribute('COUNTRY', sample),
+                                                    'country': country,
                                                     'geo_lat': get_attribute('GEOLAT', sample),
                                                     'geo_long': get_attribute('GEOLONG', sample),
                                                     'sex': get_attribute('SEX', sample),
@@ -175,15 +179,15 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                                                             'ontologyTerms': [
                                                                 {
                                                                     'termId': snomedcode_termid,
-                                                                    'term': get_attribute('ICDMORPHOLOGY', sample)
+                                                                    'termLabel': get_attribute('ICDMORPHOLOGY', sample)
                                                                 },
                                                                 {
                                                                     'termId': icdmcode_termid,
-                                                                    'term': get_attribute('ICDMORPHOLOGY', sample)
+                                                                    'termLabel': get_attribute('ICDMORPHOLOGY', sample)
                                                                 },
                                                                 {
                                                                     'termId': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
-                                                                    'term': get_attribute('ICDTOPOGRAPHY', sample)
+                                                                    'termLabel': get_attribute('ICDTOPOGRAPHY', sample)
                                                                 }
                                                             ],
                                                             'negatedOntologyTerms': []
