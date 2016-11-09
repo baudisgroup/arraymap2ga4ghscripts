@@ -148,7 +148,7 @@ def cli(dbname, collection_src, collection_dst_biosamples, collection_dst_callse
                     icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
                     country = string.capwords(get_attribute('COUNTRY', sample))
-                    country = re.sub('USA', 'United States', country)
+                    country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
                     biosamples[biosample_id] = {
                                                 'created': datetime.datetime.utcnow(),
                                                 'updated': datetime.datetime.utcnow(),
