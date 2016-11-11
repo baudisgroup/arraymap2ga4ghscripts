@@ -13,7 +13,7 @@ from bson import ObjectId
 @click.option('-dsti', '--collection_dst_individuals', default='individuals', help='The collection to write into, default is "individuals"')
 @click.option('-dstb', '--collection_dst_biosamples', default='biosamples', help='The collection to write into, default is "biosamples"')
 @click.option('-dstc', '--collection_dst_callsets', default='callsets', help='The collection to write into, default is "callsets"')
-@click.option('-d', '--demo', default=100, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
+@click.option('-d', '--demo', default=0, type=click.IntRange(0, 10000), help='Only process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
 @click.option('-l', '--log',  type=click.File('w'), help='Output errors and warnings to a log file')
 @click.option('-s', '--status',  default='-exclude', help='Filter by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude.')
