@@ -174,7 +174,7 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
 
                     individuals[individual_id] = {'id': individual_id, 'name': 'null', 'description': get_attribute('DIAGNOSISTEXT', sample), 
                                                     'characteristics': 'null', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(),
-                                                    'species': species, 'sex': sex}
+                                                    'species': species, 'sex': sex, 'redirected_to': 'null'}
                     no_individuals +=1
 
 
