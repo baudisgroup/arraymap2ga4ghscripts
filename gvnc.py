@@ -42,9 +42,13 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
     db = client[dbname]
     if collection_src not in db.collection_names():
         print(collection_src + ' does not exist')
+        print('You have to create it first with \"mongo ' + dbname +
+              ' --eval \'db.createCollection("'+collection_names+'")\'\"')
         sys.exit()
     if collection_dst not in db.collection_names():
         print(collection_dst + ' does not exist')
+        print('You have to create it first with \"mongo ' + dbname +
+              ' --eval \'db.createCollection("'+collection_dst+'")\'\"')
         sys.exit()
     samples = db[collection_src]
 
