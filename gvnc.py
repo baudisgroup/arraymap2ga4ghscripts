@@ -164,6 +164,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                     # create a tag for each segment
                     tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
                     call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {}}
+                    info = {}
 
                     try:
                         varvalue = float(seg['SEGVALUE'])
@@ -181,7 +182,7 @@ def cli(dbname, collection_src, collection_dst, demo, dnw, excluded, log):
                         callno += 1
                     else:
                         # new tag, create new variant
-                        variants[tag] = {'id': 'AM_V_'+str(varid), 'start': start, 'end': end, 'variant_set_id': variantset_id, 'reference_name': str(
+                        variants[tag] = {'id': 'AM_V_'+str(varid), 'start': start, 'end': end, 'info': info, 'variant_set_id': variantset_id, 'reference_name': str(
                             seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls': [call]}
                         varid += 1
                         callno += 1
