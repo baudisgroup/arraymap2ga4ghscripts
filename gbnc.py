@@ -46,9 +46,9 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
         print(collection_src + ' does not exist')
         sys.exit()
     if collection_dst_individuals not in db.collection_names():
-        print(collection_dst_individuals + ' does not exist')   
+        print(collection_dst_individuals + ' does not exist')
         print('You have to create it first with \"mongo ' + dbname +
-              ' --eval \'db.createCollection("'+collection_dst_individuals+'")\'\"')    
+              ' --eval \'db.createCollection("'+collection_dst_individuals+'")\'\"')
         sys.exit()
     if collection_dst_biosamples not in db.collection_names():
         print(collection_dst_biosamples + ' does not exist')
@@ -169,10 +169,10 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
                         sex_id = 'http://purl.obolibrary.org/obo/PATO_0020002'
                     else:
                         sex_id = 'null'
-                    sex = {'id': sex_id, 'term': 'genotypic sex', 'source_name': 'PATO', 
+                    sex = {'id': sex_id, 'term': 'genotypic sex', 'source_name': 'PATO',
                             'source_version':'http://purl.obolibrary.org/obo/pato/releases/2016-05-22/pato.owl'}
 
-                    individuals[individual_id] = {'id': individual_id, 'name': 'null', 'description': get_attribute('DIAGNOSISTEXT', sample), 
+                    individuals[individual_id] = {'id': individual_id, 'name': 'null', 'description': get_attribute('DIAGNOSISTEXT', sample),
                                                     'characteristics': 'null', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(),
                                                     'species': species, 'sex': sex, 'redirected_to': 'null'}
                     no_individuals +=1
@@ -191,6 +191,8 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
                     # TODO: ISO age
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
                     icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
+                    ncitcode = get_attribute('NCIT:CODE', sample)
+                    ncitcode_termid = 'NCIT:'+ncitcode
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
@@ -204,7 +206,9 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
                                                 'info': {
                                                     'pubmed_id': get_attribute('PMID', sample),
                                                     'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
-                                                    'icdo3_morphology_code': get_attribute('ICDMORPHOLOGYCODE', sample),
+                                                    'icdo3_morphology_code': icdmcode,
+                                                    'ncit': get_attribute('NCIT:TERM', sample),
+                                                    'ncit_code': ncitcode,
                                                     'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
                                                     'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
                                                     'tnm': get_attribute('TNM', sample),
@@ -222,6 +226,10 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
                                                         {
                                                             'description': get_attribute('DIAGNOSISTEXT', sample),
                                                             'ontologyTerms': [
+                                                                {
+                                                                    'termId': ncitcode_termid,
+                                                                    'termLabel': get_attribute('NCIT:TERM', sample)
+                                                                },
                                                                 {
                                                                     'termId': snomedcode_termid,
                                                                     'termLabel': get_attribute('ICDMORPHOLOGY', sample)
@@ -305,7 +313,7 @@ def cli(dbname, collection_src, collection_dst_individuals, collection_dst_biosa
                 with click.progressbar(individuals.items(), label='Writing Database ' + collection_dst_individuals + ':\t',
                                        fill_char=click.style('>', fg='green')) as bar:
                     for k, v in bar:
-                        insert_id = db_individuals.insert(v)    
+                        insert_id = db_individuals.insert(v)
 
                 db_biosamples = db[collection_dst_biosamples]
                 db_biosamples.remove()
