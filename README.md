@@ -23,9 +23,10 @@
 1. user can now provide a query by parameter or file.
 2. the query must be of correct mongodb syntax.
 3. when filtering through parameter, make sure to surround the query by "" and \ system symbol.
-4. for example >python3 arraymap2ga4gh.py -f "{'ICDMORPHOLOGYCODE': {'\$regex':'^[89]'}}"
+4. example: >python3 arraymap2ga4gh.py -f "{'ICDMORPHOLOGYCODE': {'\$regex':'\^[89]'}}"
 5. when filtering through file, only the first line is used.
-6. file has priority over param.
+6. example: >python3 arraymap2ga4gh.py -ff f.txt
+7. file has priority over param.
 
 
 
