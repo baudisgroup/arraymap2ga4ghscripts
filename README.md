@@ -1,4 +1,38 @@
 # Latest update:
+### arraymap2ga4gh.py:
+1. gvnc.py & gbnv.py are now integrated into arraymap2ga4gh.py
+2. most params' function remain the same, but with the names modified. 
+3. Some new behaviors:
+    * all the generated data is written to a new database different from the source.
+    * user can suppress the database overwriting warning prompt.
+    * user can use 2 filter params to manipulate with the input data.
+
+### New read and write source controls:
+1. the default input db is "arraymap"
+2. the default output db is "arraymap_ga4gh"
+3. user can change both sources and also collections names.
+4. please see the help for a detailed list.
+
+### New suppress parameter:
+1. this script sometimes can run from hours, to make our life easier, it can be fully automatic now.
+2. example: >python3 arraymap2ga4gh.py --dwa
+3. this will suppress the warning prompt.
+4. double check before you do this, as it will overwrite the database.
+
+### New filtering function:
+1. user can now provide a query by parameter or file.
+2. the query must be of correct mongodb syntax.
+3. when filtering through parameter, make sure to surround the query by "" and \ system symbol.
+4. example: >python3 arraymap2ga4gh.py -f "{'ICDMORPHOLOGYCODE': {'\$regex':'\^[89]'}}"
+5. when filtering through file, only the first line is used.
+6. example: >python3 arraymap2ga4gh.py -ff f.txt
+7. file has priority over param.
+
+
+
+<br><br><br>
+# Previous updates:
+## Update 3:
 ### gbnc.py:
 1. can generate individuals now.
 2. related cli option "---collection_dst_individuals" is provided.
@@ -6,10 +40,7 @@
 
 ### gvc.py:
 generates pre-set "variant set".
-
 <br><br><br>
-
-# Previous updates:
 
 ## Update 2:
 ### general modifications:
