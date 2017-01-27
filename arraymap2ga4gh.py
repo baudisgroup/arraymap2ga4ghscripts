@@ -21,18 +21,18 @@ from bson import ObjectId
 @click.option('-l', '--log',  type=click.File('w'), help='Output errors and warnings to a log file')
 @click.option('-f', '--dbfilter', default="{'STATUS': {'$regex': '^[^e]'}}", help='The filter for the data to process, should be in mongodb syntax')
 @click.option('-ff', '--file_dbfilter', type=click.File('r'), help="Read in filter from the first line of a file")
-def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets, output_collection_variants, 
+def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets, output_collection_variants,
     demo, dnw, dna, log, dbfilter, file_dbfilter):
 
 
 
     """
     This script checks through the given input database collection,
-    generate new collections of : 
+    generate new collections of :
         INDIVIDUALs, BIOSAMPLEs, CALLSETs and VARIANTs.
     And save into the output database.
 
-    WARNING: This script will overwrite the ouput collections, 
+    WARNING: This script will overwrite the ouput collections,
             check before running.
 
     Example: python3 arraymap2ga4gh.py --demo 1000 --dnw --log log.txt
@@ -93,7 +93,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
     ########################################
     # return the number of processed samples
-    ######################################## 
+    ########################################
     def show_counter(item):
         if item is not None:
             return str(no_samples+1)+' samples processed'
@@ -114,7 +114,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
 
 
-    
+
     # check if filter contains valid query
     # also get the data size.
     bar_length=0
@@ -137,7 +137,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         except:
             print("Filter Contains Invalid Query!")
             sys.exit()
-    
+
 
     if demo>0 :
         bar_length = demo
@@ -229,12 +229,12 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'description': get_attribute('DIAGNOSISTEXT', sample),
                                                 'info': {
                                                     'pubmed_id': get_attribute('PMID', sample),
-                                                    'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
-                                                    'icdo3_morphology_code': icdmcode,
-                                                    'ncit': get_attribute('NCIT:TERM', sample),
-                                                    'ncit_code': ncitcode,
-                                                    'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
-                                                    'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
+                                                    # 'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
+                                                    # 'icdo3_morphology_code': icdmcode,
+                                                    # 'ncit': get_attribute('NCIT:TERM', sample),
+                                                    # 'ncit_code': ncitcode,
+                                                    # 'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
+                                                    # 'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
                                                     'tnm': get_attribute('TNM', sample),
                                                     'age': get_attribute('AGE', sample),
                                                     'city': get_attribute('CITY', sample),
@@ -445,7 +445,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     if not dnw:
 
         # Commond line prompt to confirm the overwriting of db
-        click.echo('New data will overwrite collections: '+ output_collection_individuals +', '+output_collection_biosamples + output_collection_callsets + 
+        click.echo('New data will overwrite collections: '+ output_collection_individuals +', '+output_collection_biosamples + output_collection_callsets +
             ' and ' + output_collection_variants + '.')
         while True:
             if not dna:
@@ -498,4 +498,3 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 # main
 if __name__ == '__main__':
     cli()
- 
