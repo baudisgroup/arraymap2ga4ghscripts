@@ -118,26 +118,25 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     # check if filter contains valid query
     # also get the data size.
     bar_length=0
-
+    query = ''
     # filter from a file
     if file_dbfilter:
         # only use the first line
         line = file_dbfilter.readline()
-
+        query = eval(line)
         try:
-            bar_length = samples.find(eval(line)).count()
+            bar_length = samples.find(query).count()
         except:
             print("Filter File Contains Invalid Query!")
             sys.exit()
-        print('ff')
     else:
         # filter as a param
+        query = eval(dbfilter)
         try:
-            bar_length = samples.find(eval(dbfilter)).count()
+            bar_length = samples.find(query).count()
         except:
             print("Filter Contains Invalid Query!")
             sys.exit()
-        print('f')
     
 
     if demo>0 :
@@ -150,7 +149,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     # draw the processing bar
     ##########################
     click.echo()
-    with click.progressbar(samples.find(eval(dbfilter)), label='Processing',
+    with click.progressbar(samples.find(query), label='Processing',
                            fill_char=click.style('*', fg='green'), length=bar_length, item_show_func=show_counter) as bar:
 
         ######################
