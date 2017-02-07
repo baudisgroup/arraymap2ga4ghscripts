@@ -36,9 +36,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             check before running.
 
     Example: python3 arraymap2ga4gh.py --demo 1000 --dnw --log log.txt
-    The script will check through 1000 samples, the result won't
-    be written to the database, and any error or warning messages will
-    be shown in log.txt.
+    With these options, the script will check through 1000 samples without
+    committing the result to the database.
+    Any error or warning messages will be shown in log.txt.
     """
 
 
@@ -445,8 +445,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     if not dnw:
 
         # Commond line prompt to confirm the overwriting of db
-        click.echo('New data will overwrite collections: '+ output_collection_individuals +', '+output_collection_biosamples + output_collection_callsets +
-            ' and ' + output_collection_variants + '.')
+        click.echo('New data will overwrite collections: '+ output_collection_individuals + ', ' + output_collection_biosamples + ', ' output_collection_callsets + ' and ' + output_collection_variants + '.')
         while True:
             if not dna:
                 msg = input('Do you want to proceed? Please type y/n: ')
