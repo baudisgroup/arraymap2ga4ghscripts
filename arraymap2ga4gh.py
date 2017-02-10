@@ -236,14 +236,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     # 'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
                                                     # 'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
                                                     'tnm': get_attribute('TNM', sample),
-                                                    'age': get_attribute('AGE', sample),
+                                                    'age': float(get_attribute('AGE', sample)),
                                                     'city': get_attribute('CITY', sample),
                                                     'country': country,
-                                                    'geo_lat': get_attribute('GEOLAT', sample),
-                                                    'geo_long': get_attribute('GEOLONG', sample),
+                                                    'geo_lat': float(get_attribute('GEOLAT', sample)),
+                                                    'geo_long': float(get_attribute('GEOLONG', sample)),
                                                     'sex': get_attribute('SEX', sample),
                                                     'death': get_attribute('DEATH', sample),
-                                                    'followup_months': get_attribute('FOLLOWUP', sample),
+                                                    'followup_months': float(get_attribute('FOLLOWUP', sample)),
                                                     'redirected_to': 'null'},
                                                 'characteristics': {
                                                     'diseases': [
