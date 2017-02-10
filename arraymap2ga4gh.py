@@ -224,17 +224,25 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         geolat = float(get_attribute('GEOLAT', sample))
                     except ValueError:
                         geolat = ""
+                    except TypeError:
+                        geolat = ""
                     try:
                         geolong = float(get_attribute('GEOLONG', sample))
                     except ValueError:
                         geolong = ""
+                    except TypeError:
+                        geolong = ""
                     try:
                         age = float(get_attribute('AGE', sample))
                     except ValueError:
-                        age = ""
+                        geolong = ""
+                    except TypeError:
+                        geolong = ""
                     try:
                         followup = float(get_attribute('FOLLOWUP', sample))
                     except ValueError:
+                        followup = ""
+                    except TypeError:
                         followup = ""
                     biosamples[biosample_id] = {
                                                 'created': datetime.datetime.utcnow(),
