@@ -220,6 +220,22 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
+                    try:
+                        geolat = float(get_attribute('GEOLAT', sample))
+                    except ValueError:
+                        geolat = ""
+                    try:
+                        geolong = float(get_attribute('GEOLONG', sample))
+                    except ValueError:
+                        geolong = ""
+                    try:
+                        age = float(get_attribute('AGE', sample))
+                    except ValueError:
+                        age = ""
+                    try:
+                        folloup = float(get_attribute('FOLLOWUP', sample))
+                    except ValueError:
+                        folloup = ""
                     biosamples[biosample_id] = {
                                                 'created': datetime.datetime.utcnow(),
                                                 'updated': datetime.datetime.utcnow(),
@@ -236,14 +252,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     # 'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
                                                     # 'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
                                                     'tnm': get_attribute('TNM', sample),
-                                                    'age': float(get_attribute('AGE', sample)),
+                                                    'age': age,
                                                     'city': get_attribute('CITY', sample),
                                                     'country': country,
-                                                    'geo_lat': float(get_attribute('GEOLAT', sample)),
-                                                    'geo_long': float(get_attribute('GEOLONG', sample)),
+                                                    'geo_lat': geolat,
+                                                    'geo_long': geolong,
                                                     'sex': get_attribute('SEX', sample),
                                                     'death': get_attribute('DEATH', sample),
-                                                    'followup_months': float(get_attribute('FOLLOWUP', sample)),
+                                                    'followup_months': folloup,
                                                     'redirected_to': 'null'},
                                                 'characteristics': {
                                                     'diseases': [
