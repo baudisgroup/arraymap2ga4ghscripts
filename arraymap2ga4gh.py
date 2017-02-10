@@ -233,9 +233,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     except ValueError:
                         age = ""
                     try:
-                        folloup = float(get_attribute('FOLLOWUP', sample))
+                        followup = float(get_attribute('FOLLOWUP', sample))
                     except ValueError:
-                        folloup = ""
+                        followup = ""
                     biosamples[biosample_id] = {
                                                 'created': datetime.datetime.utcnow(),
                                                 'updated': datetime.datetime.utcnow(),
@@ -259,7 +259,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     'geo_long': geolong,
                                                     'sex': get_attribute('SEX', sample),
                                                     'death': get_attribute('DEATH', sample),
-                                                    'followup_months': folloup,
+                                                    'followup_months': followup,
                                                     'redirected_to': 'null'},
                                                 'characteristics': {
                                                     'diseases': [
