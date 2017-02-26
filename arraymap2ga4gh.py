@@ -273,25 +273,25 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     'diseases': [
                                                         {
                                                             'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                            'ontologyTerms': [
+                                                            'ontology_terms': [
                                                                 {
-                                                                    'termId': ncitcode_termid,
-                                                                    'termLabel': get_attribute('NCIT:TERM', sample)
+                                                                    'term_id': ncitcode_termid,
+                                                                    'term_label': get_attribute('NCIT:TERM', sample)
                                                                 },
                                                                 {
-                                                                    'termId': snomedcode_termid,
-                                                                    'termLabel': get_attribute('ICDMORPHOLOGY', sample)
+                                                                    'term_id': snomedcode_termid,
+                                                                    'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                                 },
                                                                 {
-                                                                    'termId': icdmcode_termid,
-                                                                    'termLabel': get_attribute('ICDMORPHOLOGY', sample)
+                                                                    'term_id': icdmcode_termid,
+                                                                    'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                                 },
                                                                 {
-                                                                    'termId': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
-                                                                    'termLabel': get_attribute('ICDTOPOGRAPHY', sample)
+                                                                    'term_id': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
+                                                                    'term_label': get_attribute('ICDTOPOGRAPHY', sample)
                                                                 }
                                                             ],
-                                                            'negatedOntologyTerms': []
+                                                            'negated_ontology_terms': []
                                                         }
                                                     ],
                                                     'phenotypes': []
