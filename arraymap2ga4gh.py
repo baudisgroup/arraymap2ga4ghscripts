@@ -245,57 +245,56 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     except TypeError:
                         followup = ""
                     biosamples[biosample_id] = {
-                                                'created': datetime.datetime.utcnow(),
-                                                'updated': datetime.datetime.utcnow(),
-                                                'individual_id': individual_id,
                                                 'id': biosample_id,
                                                 'name': biosample_id,
                                                 'description': get_attribute('DIAGNOSISTEXT', sample),
+                                                'bio_characteristics': [
+                                                    {
+                                                        'description': get_attribute('DIAGNOSISTEXT', sample),
+                                                        'ontology_terms': [
+                                                            {
+                                                                'term_id': ncitcode_termid,
+                                                                'term_label': get_attribute('NCIT:TERM', sample)
+                                                            },
+                                                            {
+                                                                'term_id': snomedcode_termid,
+                                                                'term_label': get_attribute('ICDMORPHOLOGY', sample)
+                                                            },
+                                                            {
+                                                                'term_id': icdmcode_termid,
+                                                                'term_label': get_attribute('ICDMORPHOLOGY', sample)
+                                                            },
+                                                            {
+                                                                'term_id': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
+                                                                'term_label': get_attribute('ICDTOPOGRAPHY', sample)
+                                                            }
+                                                        ],
+                                                        'negated_ontology_terms': []
+                                                    }
+                                                ],
+                                                'created': datetime.datetime.utcnow(),
+                                                'updated': datetime.datetime.utcnow(),
+                                                'individual_id': individual_id,
+                                                'external_identifiers': [
+                                                    {
+                                                        'database': 'Pubmed',
+                                                        'identifier': get_attribute('PMID', sample),
+                                                    },
+                                                ],
+                                                'attributes': {
+                                                    { 'geo_lat': { 'values': [ 'sint32_value': geolat ] } },
+                                                    { 'geo_long': { 'values': [ 'sint32_value': geolong ] } },
+                                                },
                                                 'info': {
-                                                    'pubmed_id': get_attribute('PMID', sample),
-                                                    # 'icdo3_morphology': get_attribute('ICDMORPHOLOGY', sample),
-                                                    # 'icdo3_morphology_code': icdmcode,
-                                                    # 'ncit': get_attribute('NCIT:TERM', sample),
-                                                    # 'ncit_code': ncitcode,
-                                                    # 'icdo3_topography': get_attribute('ICDTOPOGRAPHY', sample),
-                                                    # 'icdo3_topography_code': get_attribute('ICDTOPOGRAPHYCODE', sample),
                                                     'tnm': get_attribute('TNM', sample),
                                                     'age': age,
                                                     'city': get_attribute('CITY', sample),
                                                     'country': country,
-                                                    'geo_lat': geolat,
-                                                    'geo_long': geolong,
                                                     'sex': get_attribute('SEX', sample),
                                                     'death': get_attribute('DEATH', sample),
                                                     'followup_months': followup,
-                                                    'redirected_to': 'null'},
-                                                'characteristics': {
-                                                    'diseases': [
-                                                        {
-                                                            'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                            'ontology_terms': [
-                                                                {
-                                                                    'term_id': ncitcode_termid,
-                                                                    'term_label': get_attribute('NCIT:TERM', sample)
-                                                                },
-                                                                {
-                                                                    'term_id': snomedcode_termid,
-                                                                    'term_label': get_attribute('ICDMORPHOLOGY', sample)
-                                                                },
-                                                                {
-                                                                    'term_id': icdmcode_termid,
-                                                                    'term_label': get_attribute('ICDMORPHOLOGY', sample)
-                                                                },
-                                                                {
-                                                                    'term_id': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
-                                                                    'term_label': get_attribute('ICDTOPOGRAPHY', sample)
-                                                                }
-                                                            ],
-                                                            'negated_ontology_terms': []
-                                                        }
-                                                    ],
-                                                    'phenotypes': []
-                                                }
+                                                    'redirected_to': 'null'
+                                                },
                     }
                     no_biosamples += 1
 
