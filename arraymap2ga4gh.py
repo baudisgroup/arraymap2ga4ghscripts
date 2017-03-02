@@ -282,8 +282,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     },
                                                 ],
                                                 'attributes': {
-                                                    { 'geo_lat': { 'values': [ 'sint32_value': geolat ] } },
-                                                    { 'geo_long': { 'values': [ 'sint32_value': geolong ] } },
+                                                    { 'geo_lat': { 'values': [ {'sint32_value': geolat ]} } },
+                                                    { 'geo_long': { 'values': [ {'sint32_value': geolong} ] } },
                                                 },
                                                 'info': {
                                                     'tnm': get_attribute('TNM', sample),
