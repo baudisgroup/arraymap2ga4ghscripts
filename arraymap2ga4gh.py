@@ -185,22 +185,17 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     if log is not None:
                         click.echo('Duplicate individual_id: '+individual_id, file=log)
                 else:
-                    species = {'id': 'http://purl.obolibrary.org/obo/NCBITaxon_9606',
-                                'term': 'Homo sapiens',
-                                'source_name': 'NCBITaxon',
-                                'source_version': 'null'}
+                    species = {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }
                     if get_attribute('SEX', sample) is 'male':
-                        sex_id = 'http://purl.obolibrary.org/obo/PATO_0020001'
+                        sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
                     elif get_attribute('SEX', sample) is 'female':
-                        sex_id = 'http://purl.obolibrary.org/obo/PATO_0020002'
+                        sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
                     else:
-                        sex_id = 'null'
-                    sex = {'id': sex_id, 'term': 'genotypic sex', 'source_name': 'PATO',
-                            'source_version':'http://purl.obolibrary.org/obo/pato/releases/2016-05-22/pato.owl'}
+                        sex = {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }
 
                     individuals[individual_id] = {'id': individual_id, 'name': 'null', 'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                    'characteristics': 'null', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(),
-                                                    'species': species, 'sex': sex, 'redirected_to': 'null'}
+                                                    'bio_characteristics': 'null', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(),
+                                                    'species': species, 'sex': sex, 'attributes': 'null'}
                     no_individuals +=1
 
 
