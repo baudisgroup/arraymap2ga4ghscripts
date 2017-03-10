@@ -277,8 +277,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     },
                                                 ],
                                                 'attributes': {
-                                                    'geo_lat': { 'values': [ {'sint32_value': geolat } ] },
-                                                    'geo_long': { 'values': [ {'sint32_value': geolong } ] },
+                                                    'geo_lat': { 'values': [ {'double_value': geolat } ] },
+                                                    'geo_long': { 'values': [ {'double_value': geolong } ] },
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
                                                     'age':  { 'values': [ { 'double_value': age } ] },
                                                     'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
