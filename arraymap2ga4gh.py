@@ -165,9 +165,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     click.echo(no_samples, file=log)
 
             # generate ids
-            callset_id = 'AM_CS_'+sample['UID']
-            biosample_id = 'AM_BS_'+sample['UID']
-            individual_id = 'PGIND_'+sample['UID']
+            callset_id = 'PGX_AM_CS_'+sample['UID']
+            biosample_id = 'PGX_AM_BS_'+sample['UID']
+            individual_id = 'PGX_IND_'+sample['UID']
 
             ###########################################################
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
@@ -209,7 +209,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     # new biosample_id, create new biosample
                     # TODO: ISO age
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
-                    icdmcode_termid = 'ICDOM:'+re.sub('/', '_', icdmcode)
+                    icdmcode_termid = 'PGX:ICDOM:'+re.sub('/', '_', icdmcode)
                     ncitcode = get_attribute('NCIT:CODE', sample)
                     ncitcode_termid = 'NCIT:'+ncitcode
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
@@ -260,7 +260,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                                 'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                             },
                                                             {
-                                                                'term_id': 'ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
+                                                                'term_id': 'PGX:ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
                                                                 'term_label': get_attribute('ICDTOPOGRAPHY', sample)
                                                             }
                                                         ],
@@ -283,7 +283,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     'age':  { 'values': [ { 'double_value': age } ] },
                                                     'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
                                                     'country': { 'values': [ { 'string_value': country} ] },
-                                                    'sex': { 'values': [ { 'string_value': get_attribute('SEX', sample) } ] },
+                                                    # 'sex': { 'values': [ { 'string_value': get_attribute('SEX', sample) } ] },
                                                     'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
                                                     'followup_months':  { 'values': [ { 'double_value': followup } ] },
                                                     'redirected_to': 'null'
