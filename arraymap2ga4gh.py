@@ -230,9 +230,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     try:
                         age = float(get_attribute('AGE', sample))
                     except ValueError:
-                        geolong = ""
+                        age = ""
                     except TypeError:
-                        geolong = ""
+                        age = ""
                     try:
                         followup = float(get_attribute('FOLLOWUP', sample))
                     except ValueError:
