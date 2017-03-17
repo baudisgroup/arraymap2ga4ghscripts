@@ -212,10 +212,19 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     icdmcode_termid = 'PGX:ICDOM:'+re.sub('/', '_', icdmcode)
                     ncitcode = get_attribute('NCIT:CODE', sample)
                     ncitcode_termid = 'NCIT:'+ncitcode
-                    seercode_termid = 'PGX:SEER:'+get_attribute('SEERCODE', sample)
+                    seercode_termid = 'PGX:SEER:'+str(get_attribute('SEERCODE', sample))
                     snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
+
+                    external_ids = []
+                    geoMatchObj = re.search('^GSM', get_attribute('ARRAYID', sample))
+                    if geoMatchObj:
+                        external_ids.append({'database': 'GEO', 'identifier': get_attribute('ARRAYID', sample)})
+                        external_ids.append({'database': 'GEO', 'identifier': get_attribute('SERIESID', sample)})
+                    PubmedMatchObj = re.search('^\d\d+?$', get_attribute('PMID', sample))
+                    if PubmedMatchObj:
+                        external_ids.append({'database': 'Pubmed', 'identifier': str(get_attribute('PMID', sample))})
                     try:
                         geolat = float(get_attribute('GEOLAT', sample))
                     except ValueError:
@@ -263,7 +272,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                             {
                                                                 'term_id': 'PGX:ICDOT:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
                                                                 'term_label': get_attribute('ICDTOPOGRAPHY', sample)
-                                                            }
+                                                            },
                                                             {
                                                                 'term_id': seercode_termid,
                                                                 'term_label': get_attribute('SEER', sample)
@@ -276,12 +285,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'updated': datetime.datetime.utcnow(),
                                                 'individual_id': individual_id,
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
-                                                'external_identifiers': [
-                                                    {
-                                                        'database': 'Pubmed',
-                                                        'identifier': get_attribute('PMID', sample),
-                                                    },
-                                                ],
+                                                'external_identifiers': external_ids,
                                                 'attributes': {
                                                     'geo_lat': { 'values': [ {'double_value': geolat } ] },
                                                     'geo_long': { 'values': [ {'double_value': geolong } ] },
@@ -295,10 +299,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     'redirected_to': 'null'
                                                 },
                     }
-                    matchObj = re.search('^GSM', get_attribute('ARRAYID', sample)
-                    if matchObj:
-                        biosamples[biosample_id].external_identifiers.append({'database': 'GEO', 'identifier': get_attribute('ARRAYID', sample)})
-                        biosamples[biosample_id].external_identifiers.append({'database': 'GEO', 'identifier': get_attribute('SERIESID', sample)})
 
                     no_biosamples += 1
 
