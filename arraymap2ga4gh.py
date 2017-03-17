@@ -218,13 +218,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
 
                     external_ids = []
-                    geoMatchObj = re.search('^GSM', get_attribute('ARRAYID', sample))
-                    if geoMatchObj:
-                        external_ids.append({'database': 'GEO', 'identifier': get_attribute('ARRAYID', sample)})
-                        external_ids.append({'database': 'GEO', 'identifier': get_attribute('SERIESID', sample)})
-                    PubmedMatchObj = re.search('^\d\d+?$', get_attribute('PMID', sample))
+                    PubmedMatchObj = re.search('^\d\d+?$', sample['PMID'])
                     if PubmedMatchObj:
-                        external_ids.append({'database': 'Pubmed', 'identifier': str(get_attribute('PMID', sample))})
+                        external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
+                    geoMatchObj = re.search('^GSM',sample['UID'])
+                    if geoMatchObj:
+                        external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
+                        external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
                     try:
                         geolat = float(get_attribute('GEOLAT', sample))
                     except ValueError:
