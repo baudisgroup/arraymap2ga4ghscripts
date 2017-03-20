@@ -114,7 +114,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
 
 
-
     # check if filter contains valid query
     # also get the data size.
     bar_length=0
@@ -143,7 +142,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         bar_length = demo
 
 
-
+    
 
     ##########################
     # draw the processing bar
@@ -304,13 +303,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 # processing specific attributes
                 FemaleMatchObj = re.search('^f', sample['SEX'])
                 MaleMatchObj = re.search('^m', sample['SEX'])
-                if SexMatchObj:
-                    individuals[individual_id].sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
-                elif MaleMatchObj:
-                    individuals[individual_id].sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
+                if MaleMatchObj:
+                    individuals[individual_id]['sex'] = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
+                elif FemaleMatchObj:
+                    individuals[individual_id]['sex'] = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
 
                 # adding external identifiers
-                individuals[individual_id].external_identifiers = external_ids
+                individuals[individual_id]['external_identifiers'] = external_ids
 
 
 
