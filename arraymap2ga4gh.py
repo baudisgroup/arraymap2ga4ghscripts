@@ -169,45 +169,41 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             biosample_id = 'PGX_AM_BS_'+sample['UID']
             individual_id = 'PGX_IND_'+sample['UID']
 
+            # generating external identifiers
+            # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
+            external_ids = []
+            PubmedMatchObj = re.search('^\d\d+?$', sample['PMID'])
+            if PubmedMatchObj:
+                external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
+            gsmMatchObj = re.search('^GSM',sample['UID'])
+            if gsmMatchObj:
+                external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
+            gseMatchObj = re.search('^GSE',sample['SERIESID'])
+            if geoMatchObj:
+                external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
+
+
             ###########################################################
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
             ###########################################################
 
             #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
+            # TODO: check & discuss => ?!
             if (len(sample) > 50):
                 no_validSamples += 1
 
-
-
-                # generate an individual
-                if individual_id in individuals:
-                    # if same individual_id exists, report an error
-                    if log is not None:
-                        click.echo('Duplicate individual_id: '+individual_id, file=log)
-                else:
-                    species = {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }
-                    if get_attribute('SEX', sample) is 'male':
-                        sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
-                    elif get_attribute('SEX', sample) is 'female':
-                        sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
-                    else:
-                        sex = {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }
-
-                    individuals[individual_id] = {'id': individual_id, 'name': 'null', 'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                    'bio_characteristics': 'null', 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(),
-                                                    'species': species, 'sex': sex, 'attributes': 'null'}
-                    no_individuals +=1
-
-
-
+                ################################################################
                 # generate a biosample
+                ################################################################
                 if biosample_id in biosamples:
                     # if same biosample_id exists, report an error
                     if log is not None:
                         click.echo('Duplicate biosample_id: '+biosample_id, file=log)
+                    continue
                 else:
+
+
                     # new biosample_id, create new biosample
-                    # TODO: ISO age
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
                     icdmcode_termid = 'PGX:ICDOM:'+re.sub('/', '_', icdmcode)
                     ncitcode = get_attribute('NCIT:CODE', sample)
@@ -217,14 +213,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
 
-                    external_ids = []
-                    PubmedMatchObj = re.search('^\d\d+?$', sample['PMID'])
-                    if PubmedMatchObj:
-                        external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
-                    geoMatchObj = re.search('^GSM',sample['UID'])
-                    if geoMatchObj:
-                        external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
-                        external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
                     try:
                         geolat = float(get_attribute('GEOLAT', sample))
                     except ValueError:
@@ -302,12 +290,33 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     no_biosamples += 1
 
+                ################################################################
+                # generate an individual
+                ################################################################
+                if individual_id in individuals:
+                    # if same individual_id exists, report an error
+                    if log is not None:
+                        click.echo('Duplicate individual_id: '+individual_id, file=log)
+                else:
+                    individuals[individual_id] = { 'id': individual_id, 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 'sex': {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }, 'updated': datetime.datetime.utcnow() }
+                    no_individuals +=1
+
+                # processing specific attributes
+                FemaleMatchObj = re.search('^f', sample['SEX'])
+                MaleMatchObj = re.search('^m', sample['SEX'])
+                if SexMatchObj:
+                    individuals[individual_id].sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
+                elif MaleMatchObj:
+                    individuals[individual_id].sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
+
+                # adding external identifiers
+                individuals[individual_id].external_identifiers = external_ids
 
 
 
-
-
+                ################################################################
                 # check and generate callset
+                ################################################################
                 if callset_id in callsets:
                     # if same callset_id exists, report an error
                     if log is not None:
