@@ -178,7 +178,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             gsmMatchObj = re.search('^GSM',sample['UID'])
             if gsmMatchObj:
                 external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
-            gseMatchObj = re.search('^GSE',sample['SERIESID'])
+            geoMatchObj = re.search('^GSE',sample['SERIESID'])
             if geoMatchObj:
                 external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
 
