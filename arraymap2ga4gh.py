@@ -171,7 +171,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             # generating external identifiers
             # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
             external_ids = []
-            PubmedMatchObj = re.search('^\d\d+?$', sample['PMID'])
+            PubmedMatchObj = re.search('\d', sample['PMID'])
             if PubmedMatchObj:
                 external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
             gsmMatchObj = re.search('^GSM',sample['UID'])
