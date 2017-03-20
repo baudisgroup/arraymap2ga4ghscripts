@@ -304,9 +304,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 # processing specific attributes
                 FemaleMatchObj = re.search('^f', sample['SEX'])
                 MaleMatchObj = re.search('^m', sample['SEX'])
-                if SexMatchObj:
+                if MaleMatchObj:
                     individuals[individual_id].sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
-                elif MaleMatchObj:
+                elif FemaleMatchObj:
                     individuals[individual_id].sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
 
                 # adding external identifiers
