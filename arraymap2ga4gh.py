@@ -201,7 +201,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     continue
                 else:
 
-
                     # new biosample_id, create new biosample
                     icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
                     icdmcode_termid = 'PGX:ICDOM:'+re.sub('/', '_', icdmcode)
@@ -296,21 +295,21 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     # if same individual_id exists, report an error
                     if log is not None:
                         click.echo('Duplicate individual_id: '+individual_id, file=log)
+
                 else:
-                    individuals[individual_id] = { 'id': individual_id, 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 'sex': {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }, 'updated': datetime.datetime.utcnow() }
+                    # processing specific attributes
+
+                    # sex
+                    sex = {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }
+                    FemaleMatchObj = re.search('^f', sample['SEX'])
+                    MaleMatchObj = re.search('^m', sample['SEX'])
+                    if MaleMatchObj:
+                        sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
+                    elif FemaleMatchObj:
+                        sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
+
+                    individuals[individual_id] = { 'id': individual_id, 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 'sex': sex, 'external_identifiers': external_ids, 'updated': datetime.datetime.utcnow() }
                     no_individuals +=1
-
-                # processing specific attributes
-                FemaleMatchObj = re.search('^f', sample['SEX'])
-                MaleMatchObj = re.search('^m', sample['SEX'])
-                if MaleMatchObj:
-                    individuals[individual_id]['sex'] = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
-                elif FemaleMatchObj:
-                    individuals[individual_id]['sex'] = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
-
-                # adding external identifiers
-                individuals[individual_id]['external_identifiers'] = external_ids
-
 
 
                 ################################################################
