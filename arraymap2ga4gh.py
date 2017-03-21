@@ -142,7 +142,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         bar_length = demo
 
 
-    
+
 
     ##########################
     # draw the processing bar
@@ -163,25 +163,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 if matchObj:
                     click.echo(no_samples, file=log)
 
-            # generate ids
-            callset_id = 'PGX_AM_CS_'+sample['UID']
-            biosample_id = 'PGX_AM_BS_'+sample['UID']
-            individual_id = 'PGX_IND_'+sample['UID']
-
-            # generating external identifiers
-            # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
-            external_ids = []
-            PubmedMatchObj = re.search('\d', sample['PMID'])
-            if PubmedMatchObj:
-                external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
-            gsmMatchObj = re.search('^GSM',sample['UID'])
-            if gsmMatchObj:
-                external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
-            geoMatchObj = re.search('^GSE',sample['SERIESID'])
-            if geoMatchObj:
-                external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
-
-
             ###########################################################
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
             ###########################################################
@@ -190,6 +171,25 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             # TODO: check & discuss => ?!
             if (len(sample) > 50):
                 no_validSamples += 1
+
+
+                # generate ids
+                callset_id = 'PGX_AM_CS_'+sample['UID']
+                biosample_id = 'PGX_AM_BS_'+sample['UID']
+                individual_id = 'PGX_IND_'+sample['UID']
+
+                # generating external identifiers
+                # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
+                external_ids = []
+                PubmedMatchObj = re.search('\d', sample['PMID'])
+                if PubmedMatchObj:
+                    external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
+                gsmMatchObj = re.search('^GSM',sample['UID'])
+                if gsmMatchObj:
+                    external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
+                geoMatchObj = re.search('^GSE',sample['SERIESID'])
+                if geoMatchObj:
+                    external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
 
                 ################################################################
                 # generate a biosample
@@ -367,8 +367,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     if int(seg['SEGTYPE']) < 0:
                         alternate_bases = 'DEL'
+                        variant_type = 'DEL'
                     elif int(seg['SEGTYPE']) > 0:
                         alternate_bases = 'DUP'
+                        variant_type = 'DUP'
                     elif int(seg['SEGTYPE']) == 0:
                         if log is not None:
                             click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is "0"', file=log)
@@ -388,6 +390,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                             click.echo('TypeError: '+str(callset_id)+' - SEGSTOP', file=log)
                         continue
 
+                    svlen = end - start
                     # create a tag for each segment
                     tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
                     call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {}}
@@ -410,17 +413,12 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     else:
                         # new tag, create new variant
                         variants[tag] = {'id': 'AM_V_'+str(varid), 'start': start, 'end': end, 'info': info, 'variant_set_id': variantset_id, 'reference_name': str(
-                            seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls': [call]}
+                            seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'variant_type': str(variant_type), 'alternate_bases': str(alternate_bases), 'svlen': svlen, 'calls': [call]}
                         varid += 1
                         callno += 1
                         no_uniqueSegments += 1
 
                 i += 1
-
-
-
-
-
 
 
 
