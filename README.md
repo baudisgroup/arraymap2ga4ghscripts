@@ -1,4 +1,10 @@
 # Latest update:
+
+### Script modification tips:
+1. Please only use get_attribte() to get values, don't use simple[attribute].
+2. get_attribute is impoved, please see the function comments for more.
+3. Please try to assign values directly within the JSON block.
+
 ### arraymap2ga4gh.py:
 1. gvnc.py & gbnv.py are now integrated into arraymap2ga4gh.py
 2. most params' function remain the same, but with the names modified. 
