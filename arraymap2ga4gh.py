@@ -96,21 +96,56 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     ########################################
     def show_counter(item):
         if item is not None:
-            return str(no_samples+1)+' samples processed'
+            return str(no_samples+1)
 
     ########################################
     # return an attribute of a sample.
+    # name: the attribute nanme
+    # sample: the queried sample
+    # returnType: (optional) convert the return value, support "str", "float', "int", default is no conversion.
+    # nullValue: (optional) the return value when attribute doesn't exist nor of the desired type, default is "null"
     ########################################
-    def get_attribute(name, sample):
+    def get_attribute(name, sample, returnType='none', nullValue='null'):
+
         try:
             val = sample[name]
         except KeyError:
-            val = 'null'
             if log is not None:
                 click.echo('KeyError: '+str(sample['_id'])+' has no '+name, file=log)
-        return val
+            return nullValue
 
+        if returnType == 'str':
+            try:
+                return str(val)
+            except (ValueError, TypeError) as e:
+                if log is not None:
+                    click.echo('Value/Type Error:' + str(sample['_id']) + '  '+ name, file=log)
+                return nullValue
+        elif returnType == 'float':
+            try:
+                return float(val)
+            except (ValueError, TypeError) as e:
+                if log is not None:
+                    click.echo('Value/Type Error:' + str(sample['_id']) + '  '+ name, file=log)
+                return nullValue
+        elif returnType == 'int':
+            try:
+                return int(val)
+            except (ValueError, TypeError) as e:
+                if log is not None:
+                    click.echo('Value/Type Error:' + str(sample['_id']) + '  '+ name, file=log)
+                return nullValuex            
+        else:
+            return val
 
+    # write the data into database
+    def write_db(dbhandler, data, label):
+
+        dbhandler.remove()
+        with click.progressbar(data.items(), label='Writing ' + label + ':\t', width=25,
+                               fill_char=click.style('>', fg='green')) as bar:
+            for k, v in bar:
+                insert_id = dbhandler.insert(v)
 
 
 
@@ -119,6 +154,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     bar_length=0
     query = ''
     # filter from a file
+    click.echo('Preprocessing, please wait....')
     if file_dbfilter:
         # only use the first line
         line = file_dbfilter.readline()
@@ -132,12 +168,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         # filter as a param
         query = eval(dbfilter)
         try:
-            print('1')
             bar_length = samples.find(query).count()
-            print('2')
         except:
             print("Filter Contains Invalid Query!")
             sys.exit()
+    click.echo('Done.')
 
 
     if demo>0 :
@@ -170,28 +205,31 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             biosample_id = 'PGX_AM_BS_'+sample['UID']
             individual_id = 'PGX_IND_'+sample['UID']
 
-            # generating external identifiers
-            # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
-            external_ids = []
-            PubmedMatchObj = re.search('\d', sample['PMID'])
-            if PubmedMatchObj:
-                external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID',sample)})
-            gsmMatchObj = re.search('^GSM',sample['UID'])
-            if gsmMatchObj:
-                external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
-            geoMatchObj = re.search('^GSE',sample['SERIESID'])
-            if geoMatchObj:
-                external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
-
-
             ###########################################################
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
             ###########################################################
 
             #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
+            # MODI: reduce threshold to 25
             # TODO: check & discuss => ?!
-            if (len(sample) > 50):
+            if (len(sample) > 25):
                 no_validSamples += 1
+
+                ######################################################################################
+                # generating external identifiers
+                # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
+                ######################################################################################
+                external_ids = []
+                PubmedMatchObj = re.search('\d', get_attribute('PMID', sample, 'str'))
+                if PubmedMatchObj:
+                    external_ids.append({'database': 'Pubmed', 'identifier': get_attribute('PMID', sample, 'str')})
+                gsmMatchObj = re.search('^GSM', get_attribute('UID', sample, 'str'))
+                if gsmMatchObj:
+                    external_ids.append({'database': 'GEO', 'identifier': get_attribute('UID', sample, 'str')})
+                geoMatchObj = re.search('^GSE', get_attribute('SERIESID', sample, 'str'))
+                if geoMatchObj:
+                    external_ids.append({'database': 'GEO', 'identifier': get_attribute('SERIESID', sample, 'str')})
+
 
                 ################################################################
                 # generate a biosample
@@ -203,40 +241,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     continue
                 else:
 
-                    # new biosample_id, create new biosample
-                    icdmcode = get_attribute('ICDMORPHOLOGYCODE', sample)
-                    icdmcode_termid = 'PGX:ICDOM:'+re.sub('/', '_', icdmcode)
-                    ncitcode = get_attribute('NCIT:CODE', sample)
-                    ncitcode_termid = 'NCIT:'+ncitcode
-                    seercode_termid = 'PGX:SEER:'+str(get_attribute('SEERCODE', sample))
-                    snomedcode_termid = 'SNMI:M-'+re.sub('/', '', icdmcode)
+                    # Processing specific attributes
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
 
-                    try:
-                        geolat = float(get_attribute('GEOLAT', sample))
-                    except ValueError:
-                        geolat = ""
-                    except TypeError:
-                        geolat = ""
-                    try:
-                        geolong = float(get_attribute('GEOLONG', sample))
-                    except ValueError:
-                        geolong = ""
-                    except TypeError:
-                        geolong = ""
-                    try:
-                        age = float(get_attribute('AGE', sample))
-                    except ValueError:
-                        age = ""
-                    except TypeError:
-                        age = ""
-                    try:
-                        followup = float(get_attribute('FOLLOWUP', sample))
-                    except ValueError:
-                        followup = ""
-                    except TypeError:
-                        followup = ""
+
                     biosamples[biosample_id] = {
                                                 'id': biosample_id,
                                                 'name': biosample_id,
@@ -246,15 +255,15 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
                                                         'ontology_terms': [
                                                             {
-                                                                'term_id': ncitcode_termid,
+                                                                'term_id': 'NCIT:' + get_attribute('NCIT:CODE', sample),
                                                                 'term_label': get_attribute('NCIT:TERM', sample)
                                                             },
                                                             {
-                                                                'term_id': snomedcode_termid,
+                                                                'term_id': 'SNMI:M-'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
                                                                 'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                             },
                                                             {
-                                                                'term_id': icdmcode_termid,
+                                                                'term_id': 'PGX:ICDOM:'+re.sub('/', '_', get_attribute('ICDMORPHOLOGYCODE', sample)),
                                                                 'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                             },
                                                             {
@@ -262,7 +271,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                                 'term_label': get_attribute('ICDTOPOGRAPHY', sample)
                                                             },
                                                             {
-                                                                'term_id': seercode_termid,
+                                                                'term_id': 'PGX:SEER:'+str(get_attribute('SEERCODE', sample)),
                                                                 'term_label': get_attribute('SEER', sample)
                                                             }
                                                         ],
@@ -275,15 +284,15 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
                                                 'external_identifiers': external_ids,
                                                 'attributes': {
-                                                    'geo_lat': { 'values': [ {'double_value': geolat } ] },
-                                                    'geo_long': { 'values': [ {'double_value': geolong } ] },
+                                                    'geo_lat': { 'values': [ {'double_value': (get_attribute('GEOLAT', sample, 'float', '')) } ] },
+                                                    'geo_long': { 'values': [ {'double_value': (get_attribute('GEOLONG', sample, 'float', '')) } ] },
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
-                                                    # 'age':  { 'values': [ { 'double_value': age } ] },
+                                                    # 'age':  { 'values': [ { 'double_value': (get_attribute('AGE', sample, 'float', '')) } ] },
                                                     'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
                                                     'country': { 'values': [ { 'string_value': country} ] },
                                                     # 'sex': { 'values': [ { 'string_value': get_attribute('SEX', sample) } ] },
                                                     'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
-                                                    'followup_months':  { 'values': [ { 'double_value': followup } ] },
+                                                    'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample, 'float', '')) } ] },
                                                     'redirected_to': 'null'
                                                 },
                     }
@@ -303,14 +312,20 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     # sex
                     sex = {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }
-                    FemaleMatchObj = re.search('^f', sample['SEX'])
-                    MaleMatchObj = re.search('^m', sample['SEX'])
+                    FemaleMatchObj = re.search('^f', get_attribute('SEX', sample, 'str'))
+                    MaleMatchObj = re.search('^m', get_attribute('SEX', sample, 'str'))
                     if MaleMatchObj:
                         sex = {'term_id': 'PATO:0020001', 'term_label': 'male genotypic sex' }
                     elif FemaleMatchObj:
                         sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
 
-                    individuals[individual_id] = { 'id': individual_id, 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 'sex': sex, 'external_identifiers': external_ids, 'updated': datetime.datetime.utcnow() }
+                    individuals[individual_id] = { 
+                                                'id': individual_id, 
+                                                'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 
+                                                'sex': sex, 
+                                                'external_identifiers': external_ids, 
+                                                'updated': datetime.datetime.utcnow() 
+                                                }
                     no_individuals +=1
 
 
@@ -322,8 +337,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     if log is not None:
                         click.echo('Duplicate callset_id:'+callset_id, file=log)
                 else:
-                    callsets[callset_id] = {'id': callset_id,  'biosample_id': biosample_id, 'variant_set_id': variantset_id,
-                                            'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow()}
+                    callsets[callset_id] = {
+                                            'id': callset_id,  
+                                            'biosample_id': biosample_id, 
+                                            'variant_set_id': variantset_id,
+                                            'created': datetime.datetime.utcnow(), 
+                                            'updated': datetime.datetime.utcnow()
+                                            }
                     no_callsets += 1
 
 
@@ -342,13 +362,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                 # Generate callset id
                 callset_id = 'AM_CS_'+sample['UID']
-                #biosample_id = sample['BIOSAMPLEID']
-
-                # DEPRECATED: check if BIOSAMPLEID has string & use this as 'biosample_id';
-                # if not, create biosample_id as 'AM_BS__' + callset_id
-                # matchObj = re.search('^\w+.$', sample['BIOSAMPLEID'])
-                # if not matchObj:
-                #     biosample_id = 'AM_BS__'+callset_id
 
                 ######################
                 # scan every segment
@@ -411,8 +424,19 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         callno += 1
                     else:
                         # new tag, create new variant
-                        variants[tag] = {'id': 'AM_V_'+str(varid), 'start': start, 'end': end, 'info': info, 'variant_set_id': variantset_id, 'reference_name': str(
-                            seg['CHRO']), 'created': datetime.datetime.utcnow(), 'updated': datetime.datetime.utcnow(), 'reference_bases': '.', 'alternate_bases': str(alternate_bases), 'calls': [call]}
+                        variants[tag] = {
+                                        'id': 'AM_V_'+str(varid), 
+                                        'start': start, 
+                                        'end': end, 
+                                        'info': info, 
+                                        'variant_set_id': variantset_id, 
+                                        'reference_name': str(seg['CHRO']), 
+                                        'created': datetime.datetime.utcnow(), 
+                                        'updated': datetime.datetime.utcnow(), 
+                                        'reference_bases': '.', 
+                                        'alternate_bases': str(alternate_bases), 
+                                        'calls': [call]
+                                        }
                         varid += 1
                         callno += 1
                         no_uniqueSegments += 1
@@ -422,14 +446,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
 
 
-
-
-
-
-
-
             ######################
-            # Demo mode
+            # Demo mode counter
             ######################
             if demo > 0:
                 if sampleno < demo:
@@ -495,40 +513,17 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                 # writing db
                 db_out = client[output_db]
-                db_individuals = db_out[output_collection_individuals]
-                db_individuals.remove()
-                with click.progressbar(individuals.items(), label='Writing Database ' + output_collection_individuals + ':\t',
-                                       fill_char=click.style('>', fg='green')) as bar:
-                    for k, v in bar:
-                        insert_id = db_individuals.insert(v)
-
-                db_biosamples = db_out[output_collection_biosamples]
-                db_biosamples.remove()
-                with click.progressbar(biosamples.items(), label='Writing Database ' + output_collection_biosamples + ':\t',
-                                       fill_char=click.style('>', fg='green')) as bar:
-                    for k, v in bar:
-                        insert_id = db_biosamples.insert(v)
-
-                db_callsets = db_out[output_collection_callsets]
-                db_callsets.remove()
-                with click.progressbar(callsets.items(), label='Writing Database ' + output_collection_callsets + ':\t',
-                                       fill_char=click.style('>', fg='green')) as bar:
-                    for k, v in bar:
-                        insert_id = db_callsets.insert(v)
-
-                db_variants = db_out[output_collection_variants]
-                db_variants.remove()
-                with click.progressbar(variants.items(), label='Writing Database' + output_collection_variants + ':\t',
-                                       fill_char=click.style('>', fg='green')) as bar:
-                    for k, v in bar:
-                        insert_id = db_variants.insert(v)
+                write_db(db_out[output_collection_individuals], individuals, output_collection_individuals)
+                write_db(db_out[output_collection_biosamples], biosamples, output_collection_biosamples)
+                write_db(db_out[output_collection_callsets], callsets, output_collection_callsets)
+                write_db(db_out[output_collection_variants], variants, output_collection_variants)
 
                 break
 
             else:
                 print('invalid input')
         click.echo()
-
+    client.close()
 
 # main
 if __name__ == '__main__':
