@@ -21,8 +21,8 @@ from bson import ObjectId
 @click.option('-l', '--log',  type=click.File('w'), help='Output errors and warnings to a log file')
 @click.option('-f', '--dbfilter', default="{'STATUS': {'$regex': '^[^e]'}}", help='The filter for the data to process, should be in mongodb syntax')
 @click.option('-ff', '--file_dbfilter', type=click.File('r'), help="Read in filter from the first line of a file")
-def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets, output_collection_variants,
-    demo, dnw, dna, log, dbfilter, file_dbfilter):
+def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets, 
+    output_collection_variants, demo, dnw, dna, log, dbfilter, file_dbfilter):
 
 
 
@@ -132,7 +132,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         # filter as a param
         query = eval(dbfilter)
         try:
+            print('1')
             bar_length = samples.find(query).count()
+            print('2')
         except:
             print("Filter Contains Invalid Query!")
             sys.exit()
