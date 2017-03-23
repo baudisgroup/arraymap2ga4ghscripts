@@ -148,7 +148,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     # draw the processing bar
     ##########################
     click.echo()
-    with click.progressbar(samples.find(query), label='Processing',
+    with click.progressbar(samples.find(query), label='',
                            fill_char=click.style('*', fg='green'), length=bar_length, item_show_func=show_counter) as bar:
 
         ######################
@@ -187,13 +187,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 gsmMatchObj = re.search('^GSM',sample['UID'])
                 if gsmMatchObj:
                     external_ids.append({'database': 'GEO', 'identifier': sample['UID']})
-                geoMatchObj = re.search('^GSE',sample['SERIESID'])
-                if geoMatchObj:
+                gseMatchObj = re.search('^GSE',sample['SERIESID'])
+                if gseMatchObj:
                     external_ids.append({'database': 'GEO', 'identifier': sample['SERIESID']})
 
                 ################################################################
                 # generate a biosample
                 ################################################################
+
                 if biosample_id in biosamples:
                     # if same biosample_id exists, report an error
                     if log is not None:
