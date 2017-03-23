@@ -5,6 +5,10 @@
 2. get_attribute is impoved, please see the function comments for more.
 3. Please try to assign values directly within the JSON block.
 
+
+<br><br><br>
+# Previous major updates:
+## Update 4:
 ### arraymap2ga4gh.py:
 1. gvnc.py & gbnv.py are now integrated into arraymap2ga4gh.py
 2. most params' function remain the same, but with the names modified. 
@@ -36,8 +40,7 @@
 
 
 
-<br><br><br>
-# Previous updates:
+
 ## Update 3:
 ### gbnc.py:
 1. can generate individuals now.
