@@ -179,7 +179,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         bar_length = demo
 
 
-    
+
 
     ##########################
     # draw the processing bar
@@ -200,11 +200,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 if matchObj:
                     click.echo(no_samples, file=log)
 
-            # generate ids
-            callset_id = 'PGX_AM_CS_'+sample['UID']
-            biosample_id = 'PGX_AM_BS_'+sample['UID']
-            individual_id = 'PGX_IND_'+sample['UID']
-
             ###########################################################
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
             ###########################################################
@@ -214,6 +209,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             # TODO: check & discuss => ?!
             if (len(sample) > 25):
                 no_validSamples += 1
+
+                # generate ids
+                callset_id = 'PGX_AM_CS_'+sample['UID']
+                biosample_id = 'PGX_AM_BS_'+sample['UID']
+                individual_id = 'PGX_IND_'+sample['UID']
 
                 ######################################################################################
                 # generating external identifiers
@@ -234,6 +234,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 ################################################################
                 # generate a biosample
                 ################################################################
+
                 if biosample_id in biosamples:
                     # if same biosample_id exists, report an error
                     if log is not None:
@@ -382,8 +383,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     if int(seg['SEGTYPE']) < 0:
                         alternate_bases = 'DEL'
+                        variant_type = 'DEL'
                     elif int(seg['SEGTYPE']) > 0:
                         alternate_bases = 'DUP'
+                        variant_type = 'DUP'
                     elif int(seg['SEGTYPE']) == 0:
                         if log is not None:
                             click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is "0"', file=log)
@@ -403,6 +406,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                             click.echo('TypeError: '+str(callset_id)+' - SEGSTOP', file=log)
                         continue
 
+                    svlen = end - start
                     # create a tag for each segment
                     tag = str(seg['CHRO'])+'_'+str(seg['SEGSTART'])+'_'+str(seg['SEGSTOP'])+'_'+alternate_bases
                     call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {}}
@@ -437,6 +441,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                         'alternate_bases': str(alternate_bases), 
                                         'calls': [call]
                                         }
+
                         varid += 1
                         callno += 1
                         no_uniqueSegments += 1

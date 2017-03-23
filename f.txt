@@ -1,1 +1,1 @@
-{'ICDMORPHOLOGYCODE': {'$regex':'^[89]'}}
+{'ICDMORPHOLOGYCODE': {'$regex':'^[89]'}, 'STATUS': {'$regex':'^[^e]'},}
