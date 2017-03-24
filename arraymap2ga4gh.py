@@ -292,7 +292,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     # 'age':  { 'values': [ { 'double_value': (get_attribute('AGE', sample, 'float', '')) } ] },
                                                     'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
                                                     'country': { 'values': [ { 'string_value': country} ] },
-                                                    # 'sex': { 'values': [ { 'string_value': get_attribute('SEX', sample) } ] },
                                                     'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
                                                     'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample, 'float', '')) } ] },
                                                     'redirected_to': 'null'
@@ -491,7 +490,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     click.echo(str(no_segments-no_variantOneSeg) + '\t segments have companies (' + str(no_segments-no_variantOneSeg) +
                '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100, 2)) + '%)')
     click.echo(str(no_uniqueSegments) + '\t variants created')
-    click.echo(str(no_variantOneSeg) + '\t variants have a single call (' + str(no_variantOneSeg) +
+    click.echo(str(no_variantOneSeg) + '\t variants are unique (' + str(no_variantOneSeg) +
                '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantOneSeg/no_uniqueSegments*100, 2)) + '%)')
     click.echo(str(no_variantMultSeg) + '\t variants have multiple calls (' + str(no_variantMultSeg) +
                '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantMultSeg/no_uniqueSegments*100, 2)) + '%)')
