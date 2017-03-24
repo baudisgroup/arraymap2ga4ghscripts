@@ -21,7 +21,7 @@ from bson import ObjectId
 @click.option('-l', '--log',  type=click.File('w'), help='Output errors and warnings to a log file')
 @click.option('-f', '--dbfilter', default="{'STATUS': {'$regex': '^[^e]'}}", help='The filter for the data to process, should be in mongodb syntax')
 @click.option('-ff', '--file_dbfilter', type=click.File('r'), help="Read in filter from the first line of a file")
-def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets, 
+def cli(input_db, input_collection, output_db, output_collection_individuals, output_collection_biosamples, output_collection_callsets,
     output_collection_variants, demo, dnw, dna, log, dbfilter, file_dbfilter):
 
 
@@ -134,7 +134,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             except (ValueError, TypeError) as e:
                 if log is not None:
                     click.echo('Value/Type Error:' + str(sample['_id']) + '  '+ name, file=log)
-                return nullValuex            
+                return nullValuex
         else:
             return val
 
@@ -243,6 +243,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 else:
 
                     # Processing specific attributes
+                    # TODO: fixing country names should be in an external cleanup script
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
 
@@ -320,12 +321,12 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     elif FemaleMatchObj:
                         sex = {'term_id': 'PATO:0020002', 'term_label': 'female genotypic sex' }
 
-                    individuals[individual_id] = { 
-                                                'id': individual_id, 
-                                                'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' }, 
-                                                'sex': sex, 
-                                                'external_identifiers': external_ids, 
-                                                'updated': datetime.datetime.utcnow() 
+                    individuals[individual_id] = {
+                                                'id': individual_id,
+                                                'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' },
+                                                'sex': sex,
+                                                'external_identifiers': external_ids,
+                                                'updated': datetime.datetime.utcnow()
                                                 }
                     no_individuals +=1
 
@@ -339,10 +340,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         click.echo('Duplicate callset_id:'+callset_id, file=log)
                 else:
                     callsets[callset_id] = {
-                                            'id': callset_id,  
-                                            'biosample_id': biosample_id, 
+                                            'id': callset_id,
+                                            'biosample_id': biosample_id,
                                             'variant_set_id': variantset_id,
-                                            'created': datetime.datetime.utcnow(), 
+                                            'created': datetime.datetime.utcnow(),
                                             'updated': datetime.datetime.utcnow()
                                             }
                     no_callsets += 1
@@ -429,16 +430,16 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     else:
                         # new tag, create new variant
                         variants[tag] = {
-                                        'id': 'AM_V_'+str(varid), 
-                                        'start': start, 
-                                        'end': end, 
-                                        'info': info, 
-                                        'variant_set_id': variantset_id, 
-                                        'reference_name': str(seg['CHRO']), 
-                                        'created': datetime.datetime.utcnow(), 
-                                        'updated': datetime.datetime.utcnow(), 
-                                        'reference_bases': '.', 
-                                        'alternate_bases': str(alternate_bases), 
+                                        'id': 'AM_V_'+str(varid),
+                                        'start': start,
+                                        'end': end,
+                                        'info': info,
+                                        'variant_set_id': variantset_id,
+                                        'reference_name': str(seg['CHRO']),
+                                        'created': datetime.datetime.utcnow(),
+                                        'updated': datetime.datetime.utcnow(),
+                                        'reference_bases': '.',
+                                        'alternate_bases': str(alternate_bases),
                                         'calls': [call]
                                         }
 
