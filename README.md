@@ -133,6 +133,7 @@ This script will scan the "samples", find all the "HG18 segment"s and put ones w
 
 ## DB test
 
-*  query for variant hitting the gene TP53 at (hg18) 7512444 - 7531593, but staying inside 5012444 - 10031593
+*  query for variant hitting the gene TP53 at (hg18) 7512444 - 7531593, but staying inside 5012444 - 10031593:
+
 `db.variants.find( { reference_name:"17", variant_type:"DEL", $and:[ { start: {$gte:5012444}, start: {$lte:7531593} } ], $and:[ { end: { $gte:7512444} }, { end: {$lte:10031593} } ] } ).count()
 `
