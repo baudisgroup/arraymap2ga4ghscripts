@@ -370,8 +370,12 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 for seg in sample['SEGMENTS_HG18']:
                     no_segments += 1
                     alternate_bases = ''
+                    variant_type = ''
                     start = int()
                     end = int()
+                    # cipos,ciend may get values which reflect the array precision
+                    cipos = []
+                    ciend = []
                     varvalue = float()
 
                     try:
@@ -382,11 +386,15 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         continue
 
                     if int(seg['SEGTYPE']) < 0:
-                        alternate_bases = 'DEL'
+                        alternate_bases = '<DEL>'
                         variant_type = 'DEL'
+                        cipos = [-1000,1000]
+                        ciend = [-1000,1000]
                     elif int(seg['SEGTYPE']) > 0:
-                        alternate_bases = 'DUP'
+                        alternate_bases = '<DUP>'
                         variant_type = 'DUP'
+                        cipos = [-1000,1000]
+                        ciend = [-1000,1000]
                     elif int(seg['SEGTYPE']) == 0:
                         if log is not None:
                             click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is "0"', file=log)
@@ -439,6 +447,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                         'updated': datetime.datetime.utcnow(),
                                         'reference_bases': '.',
                                         'alternate_bases': str(alternate_bases),
+                                        'variant_type': str(variant_type),
+                                        'cipos': cipos,
+                                        'ciend': ciend,
                                         'calls': [call]
                                         }
 
