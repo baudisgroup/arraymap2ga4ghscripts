@@ -11,7 +11,7 @@
 ## Update 4:
 ### arraymap2ga4gh.py:
 1. gvnc.py & gbnv.py are now integrated into arraymap2ga4gh.py
-2. most params' function remain the same, but with the names modified. 
+2. most params' function remain the same, but with the names modified.
 3. Some new behaviors:
     * all the generated data is written to a new database different from the source.
     * user can suppress the database overwriting warning prompt.
@@ -64,7 +64,7 @@ generates pre-set "variant set".
 
 ### gbnc.py:
 1. new option:'-s', '--status',  default='-exclude'
-2. it filters the data collection by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude. 
+2. it filters the data collection by STATUS value, param must be in format [+/-]keyword. "+" means to include, "-" means to exclude.
 3. it accepts regular expression, eg: "--status +include\\|\^NA" as an option from cmd.
 4. biosample_id is always generated now, instead of checking existence and generating when absent.
 5. characteristics of biosample is implemented. Right now, it simply captures ICD information.
@@ -129,4 +129,10 @@ The old script version:
 #### Pre-requirement:
 * `sudo pip install pymongo`
 
-This script will scan the "samples", find all the "HG18 segment"s and put ones with identical type and locaation in one variant.
+This script will scan the "samples", find all the "HG18 segment"s and put ones with identical type and location in one variant.
+
+## DB test
+
+*  query for variant hitting the gene TP53 at (hg18) 7512444 - 7531593, but staying inside 5012444 - 10031593
+`db.variants.find( { reference_name:"17", variant_type:"DEL", $and:[ { start: {$gte:5012444}, start: {$lte:7531593} } ], $and:[ { end: { $gte:7512444} }, { end: {$lte:10031593} } ] } ).count()
+`
