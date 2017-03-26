@@ -134,7 +134,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             except (ValueError, TypeError) as e:
                 if log is not None:
                     click.echo('Value/Type Error:' + str(sample['_id']) + '  '+ name, file=log)
-                return nullValuex
+                return nullValue
         else:
             return val
 
