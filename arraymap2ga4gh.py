@@ -244,11 +244,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     # TODO: fixing country names should be in an external cleanup script
                     country = string.capwords(get_attribute('COUNTRY', sample))
                     country = re.sub('USA', 'United States', country, flags=re.IGNORECASE)
+                    countryMatchObj = re.search('\w', country)
 
                     city = string.capwords(get_attribute('CITY', sample))
                     cityMatchObj = re.search('\w', city)
 
-                    countryMatchObj = re.search('\w', country)
                     geoLabel = ''
                     geoPrecision = ''
                     if cityMatchObj
