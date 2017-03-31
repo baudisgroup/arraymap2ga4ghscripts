@@ -251,12 +251,12 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     geoLabel = ''
                     geoPrecision = ''
-                    if cityMatchObj
+                    if cityMatchObj:
                         geoLabel = city
                         geoPrecision = 'city'
-                        if countryMatchObj
+                        if countryMatchObj:
                             geoLabel = geoLabel+', '+country
-                    elif countryMatchObj
+                    elif countryMatchObj:
                         geoLabel = country
                         geoPrecision = 'country'
 
