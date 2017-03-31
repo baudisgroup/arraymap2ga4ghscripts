@@ -285,13 +285,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'individual_id': individual_id,
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
                                                 'external_identifiers': external_ids,
+                                                'location': { 'geo_label': get_attribute('CITY', sample)+', '+country,  'geo_precision': "city", 'latitude': get_attribute('GEOLAT', sample, 'float', ''), 'longitude': get_attribute('GEOLONG', sample, 'float', '') },
                                                 'attributes': {
-                                                    'geo_lat': { 'values': [ {'double_value': (get_attribute('GEOLAT', sample, 'float', '')) } ] },
-                                                    'geo_long': { 'values': [ {'double_value': (get_attribute('GEOLONG', sample, 'float', '')) } ] },
+                                                    # 'geo_lat': { 'values': [ {'double_value': (get_attribute('GEOLAT', sample, 'float', '')) } ] },
+                                                    # 'geo_long': { 'values': [ {'double_value': (get_attribute('GEOLONG', sample, 'float', '')) } ] },
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
                                                     # 'age':  { 'values': [ { 'double_value': (get_attribute('AGE', sample, 'float', '')) } ] },
-                                                    'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
-                                                    'country': { 'values': [ { 'string_value': country} ] },
+                                                    # 'city': { 'values': [ { 'string_value': get_attribute('CITY', sample) } ] },
+                                                    # 'country': { 'values': [ { 'string_value': country} ] },
                                                     'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
                                                     'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample, 'float', '')) } ] },
                                                     'redirected_to': 'null'
