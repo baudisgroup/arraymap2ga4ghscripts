@@ -66,6 +66,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     callsets = {}
     variants = {}
     variantset_id = 'AM_VS_HG18'
+
     # counter for demo mode
     sampleno = 1
 
@@ -205,9 +206,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             ###########################################################
 
             #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
-            # MODI: reduce threshold to 25
+            # MODI: reduce threshold to 30
             # TODO: check & discuss => ?!
-            if (len(sample) > 25):
+            if (len(sample) > 30):
                 no_validSamples += 1
 
                 # generate ids
