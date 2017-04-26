@@ -371,7 +371,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 no_sample_w_segments += 1
 
                 # Generate callset id
-                callset_id = 'AM_CS_'+sample['UID']
+                callset_id = 'PGX_AM_CS_'+sample['UID']
 
                 ######################
                 # scan every segment
