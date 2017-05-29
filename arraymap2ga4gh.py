@@ -8,13 +8,13 @@ from bson import ObjectId
 
 
 @click.command()
-@click.option('-dbin', '--input_db', default='arraymap', help='The name of the input database, default is "arraymap"')
+@click.option('-dbin', '--input_db', default='', help='The name of the input database, default is "arraymap"')
 @click.option('-cin', '--input_collection', default='samples', help='The input collection, default is "samples"')
-@click.option('-dbout', '--output_db', default='arraymap_ga4gh', help='The name of the output database, default is "arraymap_ga4gh"')
+@click.option('-dbout', '--output_db', default='', help='The name of the output database, default is "arraymap_ga4gh"')
 @click.option('-couti', '--output_collection_individuals', default='individuals', help='The output collection of individuals, default is "individuals"')
 @click.option('-coutb', '--output_collection_biosamples', default='biosamples', help='The output collection of biosamples, default is "biosamples"')
-@click.option('-coutc', '--output_collection_callsets', default='callsets', help='The output collection of callsets, default is "callsets"')
-@click.option('-coutv', '--output_collection_variants', default='variants', help='The output collection of variants, default is "variants"')
+@click.option('-coutc', '--output_collection_callsets', default='callsets_grch36', help='The output collection of callsets, default is "callsets"')
+@click.option('-coutv', '--output_collection_variants', default='variants_cnv_grch36', help='The output collection of variants, default is "variants"')
 @click.option('-d', '--demo', default=0, type=click.IntRange(0, 10000), help='Only to process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
 @click.option('--dna', is_flag=True, help='Do Not Ask before overwriting the database')
@@ -41,7 +41,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     Any error or warning messages will be shown in log.txt.
     """
 
-
+    ############################################
+    # Init input and output database names
+    ############################################
+    if input_db == '':
+        input_db = 'arraymap'
+    if output_db == '':
+        output_db = input_db + '_ga4gh'
 
 
     ######################
@@ -175,6 +181,26 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
     if demo>0 :
         bar_length = demo
+
+
+
+
+    ##########################
+    # Display settings
+    ##########################
+    print()
+    print('Script settings:')
+    print('input_db: ' + input_db)
+    print('input_collection: ' + input_collection)
+    print('output_db: ' + output_db)
+    print('output collections: {}, {}, {}, {}'.format(output_collection_individuals, output_collection_biosamples, 
+                                                        output_collection_callsets, output_collection_variants))
+    print('filtering condition: ' + str(query))
+    print('demo mode: ' + (str(demo) if demo>0 else 'false'))
+    print('no writing: ' + ('true' if dnw else 'false'))
+    print('no overwrite warning: ' + ('true' if dna else 'false'))
+    print('log file: ' + (str(log) if log else 'none'))
+
 
 
 
@@ -548,6 +574,16 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             else:
                 print('invalid input')
         click.echo()
+
+        # write variant set manually
+        variant_set = {'id': 'AM_VS_HG18',
+                'dataset_id': 'arraymap',
+
+                'reference_set_id:': 'GRCh36',
+                }
+        db_out['variantsets'].remove()
+        db_out['variantsets'].insert(variant_set)
+
     client.close()
 
 # main
