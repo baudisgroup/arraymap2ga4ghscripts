@@ -415,7 +415,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     try:
                         typevalue = int(seg['SEGTYPE'])
-                    except TypeError:
+                    except (TypeError, ValueError):
                         if log is not None:
                             click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is not INT', file=log)
                         continue
