@@ -1,5 +1,11 @@
 # Latest update:
+### New version:
+arraymap2ga4gh_v2.py 
 
+- It works for the new arraymap/progentix scheme.
+- A few improvements.
+
+<br><br><br>
 ### Script modification tips:
 1. Please only use get_attribte() to get values, don't use simple[attribute].
 2. get_attribute is impoved, please see the function comments for more.
