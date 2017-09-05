@@ -71,7 +71,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     biosamples = {}
     callsets = {}
     variants = {}
-    variantset_id = 'AM_VS_HG18'
+    variantset_id = 'AM_VS_GRCH36'
 
     # counter for demo mode
     sampleno = 1
@@ -307,11 +307,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
                                                         'ontology_terms': [
                                                             {
-                                                                'term_id': 'pgx:ncit:' + get_attribute('NCIT:CODE', sample),
+                                                                'term_id': 'ncit:' + get_attribute('NCIT:CODE', sample),
                                                                 'term_label': get_attribute('NCIT:TERM', sample)
                                                             },
                                                             {
-                                                                'term_id': 'pgx:snmi:M-'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
+                                                                'term_id': 'snmi:M-'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
                                                                 'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                             },
                                                             {
@@ -419,8 +419,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     no_segments += 1
                     alternate_bases = ''
                     variant_type = get_attribute('variantType', seg)
-                    start = get_attribute('start',seg)
-                    end = get_attribute('end', seg)
+                    start = get_attribute('start',seg,'int')
+                    end = get_attribute('end', seg,'int')
                     # cipos,ciend may get values which reflect the array precision
                     cipos = []
                     ciend = []
@@ -445,7 +445,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     svlen = end - start
                     # create a tag for each segment
                     tag = '{}_{}_{}_{}'.format(seg['referenceName'], start, end, alternate_bases)
-                    call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {'segvalue': varvalue}}
+                    call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {'segvalue': varvalue, 'biosample_id': biosample_id}}
                     info = {}
 
 
@@ -561,7 +561,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         click.echo()
 
         # write variant set manually
-        variant_set = {'id': 'AM_VS_HG18',
+        variant_set = {'id': 'AM_VS_CRCH36',
                 'dataset_id': 'arraymap',
                 'reference_set_id:': 'GRCh36',
                 }
