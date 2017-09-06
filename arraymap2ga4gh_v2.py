@@ -13,7 +13,7 @@ from bson import ObjectId
 @click.option('-dbout', '--output_db', default='', help='The name of the output database, default is "arraymap_ga4gh"')
 @click.option('-couti', '--output_collection_individuals', default='individuals', help='The output collection of individuals, default is "individuals"')
 @click.option('-coutb', '--output_collection_biosamples', default='biosamples', help='The output collection of biosamples, default is "biosamples"')
-@click.option('-coutc', '--output_collection_callsets', default='callsets_grch36', help='The output collection of callsets, default is "callsets"')
+@click.option('-coutc', '--output_collection_callsets', default='callsets_cnv_grch36', help='The output collection of callsets, default is "callsets"')
 @click.option('-coutv', '--output_collection_variants', default='variants_cnv_grch36', help='The output collection of variants, default is "variants"')
 @click.option('-d', '--demo', default=0, type=click.IntRange(0, 10000), help='Only to process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
