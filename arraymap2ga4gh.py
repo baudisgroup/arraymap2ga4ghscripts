@@ -243,18 +243,18 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 # generating external identifiers
                 # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
                 ######################################################################################
-                external_ids = []
+                external_identifier_relationships = []
 
                 for eid in sample['IDENTIFIERS']:
                     tokens = eid.split(':')
                     if tokens[0] == 'pubmedid':
-                        external_ids.append({'database': 'Pubmed', 'identifier': 'pubmed:'+tokens[1]})
+                        external_identifier_relationships.append({'relation': 'reported_in', 'identifier': 'pubmed:'+tokens[1]})
                     if tokens[0] == 'geogse':
-                        external_ids.append({'database': 'GEO.GSE', 'identifier': 'geo:'+tokens[1]})
+                        external_identifier_relationships.append({'relation': 'part_of', 'identifier': 'geo:'+tokens[1]})
                     if tokens[0] == 'geogpl':
-                        external_ids.append({'database': 'GEO.GPL', 'identifier': 'geo:'+tokens[1]})
+                        external_identifier_relationships.append({'relation': 'part_of', 'identifier': 'geo:'+tokens[1]})
                     if tokens[0] == 'geogsm':
-                        external_ids.append({'database': 'GEO.GSM', 'identifier': 'geo:'+tokens[1]})
+                        external_identifier_relationships.append({'relation': 'representation_of', 'identifier': 'geo:'+tokens[1]})
 
 
                 ################################################################
