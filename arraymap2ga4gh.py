@@ -330,7 +330,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'updated': datetime.datetime.utcnow(),
                                                 'individual_id': individual_id,
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
-                                                'external_identifiers': external_ids,
+                                                'external_identifiers': external_identifier_relationships,
                                                 'location': { 'geo_label': geoLabel,  'geo_precision': geoPrecision, 'latitude': geolat, 'longitude': getlong },
                                                 'attributes': {
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
@@ -365,7 +365,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'id': individual_id,
                                                 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' },
                                                 'sex': sex,
-                                                'external_identifiers': external_ids,
+                                                'external_identifiers': external_identifier_relationships,
                                                 'updated': datetime.datetime.utcnow()
                                                 }
                     no_individuals +=1
