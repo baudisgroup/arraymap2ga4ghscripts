@@ -193,7 +193,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     print('input_db: ' + input_db)
     print('input_collection: ' + input_collection)
     print('output_db: ' + output_db)
-    print('output collections: {}, {}, {}, {}'.format(output_collection_individuals, output_collection_biosamples, 
+    print('output collections: {}, {}, {}, {}'.format(output_collection_individuals, output_collection_biosamples,
                                                         output_collection_callsets, output_collection_variants))
     print('filtering condition: ' + str(query))
     print('demo mode: ' + (str(demo) if demo>0 else 'false'))
@@ -248,13 +248,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 for eid in sample['IDENTIFIERS']:
                     tokens = eid.split(':')
                     if tokens[0] == 'pubmedid':
-                        external_ids.append({'database': 'Pubmed', 'identifier': tokens[1]})
+                        external_ids.append({'database': 'Pubmed', 'identifier': 'pubmed:'+tokens[1]})
                     if tokens[0] == 'geogse':
-                        external_ids.append({'database': 'GEO.GSE', 'identifier': tokens[1]})
+                        external_ids.append({'database': 'GEO.GSE', 'identifier': 'geo:'+tokens[1]})
                     if tokens[0] == 'geogpl':
-                        external_ids.append({'database': 'GEO.GPL', 'identifier': tokens[1]})
+                        external_ids.append({'database': 'GEO.GPL', 'identifier': 'geo:'+tokens[1]})
                     if tokens[0] == 'geogsm':
-                        external_ids.append({'database': 'GEO.GSM', 'identifier': tokens[1]})
+                        external_ids.append({'database': 'GEO.GSM', 'identifier': 'geo:'+tokens[1]})
 
 
                 ################################################################
@@ -309,10 +309,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                             {
                                                                 'term_id': 'ncit:' + get_attribute('NCIT:CODE', sample),
                                                                 'term_label': get_attribute('NCIT:TERM', sample)
-                                                            },
-                                                            {
-                                                                'term_id': 'snmi:M-'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
-                                                                'term_label': get_attribute('ICDMORPHOLOGY', sample)
                                                             },
                                                             {
                                                                 'term_id': 'pgx:icdom:'+re.sub('/', '_', get_attribute('ICDMORPHOLOGYCODE', sample)),
@@ -387,8 +383,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                             'id': callset_id,
                                             'biosample_id': biosample_id,
                                             'variant_set_id': variantset_id,
-                                            'created': datetime.datetime.utcnow(),
-                                            'updated': datetime.datetime.utcnow()
+                                            'updated': datetime.datetime.utcnow(),
+                                            'info': {'statusmaps': get_attribute('statusmaps', sample) }
                                             }
                     no_callsets += 1
 
