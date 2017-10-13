@@ -254,7 +254,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     if tokens[0] == 'geogpl':
                         external_identifier_relationships.append({'relation': 'part_of', 'identifier': 'geo:'+tokens[1]})
                     if tokens[0] == 'geogsm':
-                        external_identifier_relationships.append({'relation': 'representation_of', 'identifier': 'geo:'+tokens[1]})
+                        external_identifier_relationships.append({'relation': 'denotes', 'identifier': 'geo:'+tokens[1]})
 
 
                 ################################################################
