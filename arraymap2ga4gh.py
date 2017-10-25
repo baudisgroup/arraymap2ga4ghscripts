@@ -240,22 +240,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 individual_id = 'PGX_IND_'+sample['UID']
 
                 ######################################################################################
-                # generating external identifiers
-                # here also extrapolating from the experiment (i.e. arraymap "sample" data) right now
+                # external identifiers
+                # now just taking them from the sample collection (have been added there)
                 ######################################################################################
-                external_identifier_relationships = []
-
-                for eid in sample['IDENTIFIERS']:
-                    tokens = eid.split(':')
-                    if tokens[0] == 'pubmedid':
-                        external_identifier_relationships.append({'relation': 'reported_in', 'identifier': 'pubmed:'+tokens[1]})
-                    if tokens[0] == 'geogse':
-                        external_identifier_relationships.append({'relation': 'part_of', 'identifier': 'geo:'+tokens[1]})
-                    if tokens[0] == 'geogpl':
-                        external_identifier_relationships.append({'relation': 'part_of', 'identifier': 'geo:'+tokens[1]})
-                    if tokens[0] == 'geogsm':
-                        external_identifier_relationships.append({'relation': 'denotes', 'identifier': 'geo:'+tokens[1]})
-
+                external_identifiers = sample['external_identifiers']
 
                 ################################################################
                 # generate a biosample
@@ -326,11 +314,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                         'negated_ontology_terms': []
                                                     }
                                                 ],
-                                                'created': datetime.datetime.utcnow(),
                                                 'updated': datetime.datetime.utcnow(),
                                                 'individual_id': individual_id,
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
-                                                'external_identifiers': external_identifier_relationships,
+                                                'external_identifiers': external_identifiers,
                                                 'location': { 'geo_label': geoLabel,  'geo_precision': geoPrecision, 'latitude': geolat, 'longitude': getlong },
                                                 'attributes': {
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
@@ -365,7 +352,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'id': individual_id,
                                                 'species': {'term_id': 'NCBITaxon:9606', 'term_label': 'Homo sapiens' },
                                                 'sex': sex,
-                                                'external_identifiers': external_identifier_relationships,
+                                                'external_identifiers': external_identifiers,
                                                 'updated': datetime.datetime.utcnow()
                                                 }
                     no_individuals +=1
