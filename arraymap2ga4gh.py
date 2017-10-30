@@ -318,11 +318,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'individual_id': individual_id,
                                                 'individual_age_at_collection': get_attribute('AGEISO', sample),
                                                 'external_identifiers': external_identifiers,
-                                                'location': { 'geo_label': geoLabel,  'geo_precision': geoPrecision, 'latitude': geolat, 'longitude': getlong },
+                                                'location': { 'label': geoLabel,  'precision': geoPrecision, 'latitude': geolat, 'longitude': getlong },
                                                 'attributes': {
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
                                                     'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
-                                                    'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUPISO', sample)) } ] },
+                                                    'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample)) } ] },
                                                 },
                     }
 
@@ -446,7 +446,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                         'info': info,
                                         'variant_set_id': variantset_id,
                                         'reference_name': get_attribute('referenceName', seg, 'str'),
-                                        'created': datetime.datetime.utcnow(),
+                                        # 'created': datetime.datetime.utcnow(),
                                         'updated': datetime.datetime.utcnow(),
                                         'reference_bases': '.',
                                         'alternate_bases': alternate_bases,
