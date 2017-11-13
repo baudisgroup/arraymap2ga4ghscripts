@@ -316,13 +316,13 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 ],
                                                 'updated': datetime.datetime.utcnow(),
                                                 'individual_id': individual_id,
-                                                'individual_age_at_collection': get_attribute('AGEISO', sample),
+                                                'individual_age_at_collection': { 'age' : get_attribute('AGEISO', sample), 'age_class' : 'null' }, # TODO: derive age_class
                                                 'external_identifiers': external_identifiers,
                                                 'location': { 'label': geoLabel,  'precision': geoPrecision, 'latitude': geolat, 'longitude': getlong },
                                                 'attributes': {
                                                     'tnm': { 'values': [ { 'string_value': get_attribute('TNM', sample) } ] },
-                                                    'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] },
-                                                    'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample)) } ] },
+                                                    'death': { 'values': [ { 'string_value': get_attribute('DEATH', sample) } ] }, # TODO: ontology for death
+                                                    'followup_months':  { 'values': [ { 'double_value': (get_attribute('FOLLOWUP', sample)) } ] }, # TODO: ISO 8601 for followup
                                                 },
                     }
 
