@@ -395,7 +395,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                 # Generate callset id
                 # TODO: see above, PMID etc.
-                callset_id = 'pgxcs::'+sample['SERIESID']'::'+sample['UID']
+                callset_id = 'pgxcs::'+sample['SERIESID']+'::'+sample['UID']
 
                 ######################
                 # scan every segment
