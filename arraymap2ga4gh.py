@@ -235,7 +235,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 no_validSamples += 1
 
                 # generate ids
-                callset_id = 'PGX_AM_CS_'+sample['UID']
+                # TODO: check for SERIESID => if not (progenetix ...) => PMID
+                callset_id = 'pgxcs::'+sample['SERIESID']+'::'+sample['UID']
                 biosample_id = 'PGX_AM_BS_'+sample['UID']
                 individual_id = 'PGX_IND_'+sample['UID']
 
@@ -393,7 +394,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 no_sample_w_segments += 1
 
                 # Generate callset id
-                callset_id = 'PGX_AM_CS_'+sample['UID']
+                # TODO: see above, PMID etc.
+                callset_id = 'pgxcs::'+sample['SERIESID']'::'+sample['UID']
 
                 ######################
                 # scan every segment
