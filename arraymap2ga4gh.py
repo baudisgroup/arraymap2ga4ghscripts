@@ -9,7 +9,7 @@ from bson import ObjectId
 
 @click.command()
 @click.option('-dbin', '--input_db', default='', help='The name of the input database, default is "arraymap"')
-@click.option('-cin', '--input_collection', default='samples', help='The input collection, default is "samples"')
+@click.option('-cin', '--input_collection', default='samples_web', help='The input collection, default is "samples"')
 @click.option('-dbout', '--output_db', default='', help='The name of the output database, default is "arraymap_ga4gh"')
 @click.option('-couti', '--output_collection_individuals', default='individuals', help='The output collection of individuals, default is "individuals"')
 @click.option('-coutb', '--output_collection_biosamples', default='biosamples', help='The output collection of biosamples, default is "biosamples"')
@@ -403,7 +403,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 for seg in sample['variants_cnv']:
                     no_segments += 1
                     alternate_bases = ''
-                    variant_type = get_attribute('variantType', seg)
+                    variant_type = get_attribute('variant_type', seg)
                     start = get_attribute('start',seg,'int')
                     end = get_attribute('end', seg,'int')
                     # cipos,ciend may get values which reflect the array precision
@@ -427,10 +427,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         continue
 
 
-                    svlen = end - start
+#                    svlen = end - start
                     # create a tag for each segment
-                    tag = '{}_{}_{}_{}'.format(seg['referenceName'], start, end, alternate_bases)
-                    call = {'call_set_id': callset_id, 'genotype': ['.', '.'], 'info': {'segvalue': varvalue, 'biosample_id': biosample_id}}
+                    tag = '{}_{}_{}_{}'.format(seg['reference_name'], start, end, alternate_bases)
+                    call = {'callset_id': callset_id, 'genotype': ['.', '.'], 'info': {'value': varvalue, 'biosample_id': biosample_id}}
                     info = {}
 
 
@@ -446,8 +446,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                         'start': start,
                                         'end': end,
                                         'info': info,
-                                        'variant_set_id': variantset_id,
-                                        'reference_name': get_attribute('referenceName', seg, 'str'),
+                                        'variantset_id': variantset_id,
+                                        'reference_name': get_attribute('reference_name', seg, 'str'),
                                         # 'created': datetime.datetime.utcnow(),
                                         'updated': datetime.datetime.utcnow(),
                                         'reference_bases': '.',
