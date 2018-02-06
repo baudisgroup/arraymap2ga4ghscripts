@@ -1,0 +1,1 @@
+mongodump -d arraymap_ga4gh -o /Users/Shared/mongodump/

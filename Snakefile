@@ -38,4 +38,5 @@ rule file2db:
     # output:
     #     '/data/db/mongodb/arraymap_ga4gh.ns'
     shell:
-        'python arraymap_ga4gh_liftover.py'
+        'python arraymap_ga4gh_liftover.py &&'
+        'sh dump_arraymap_tcga.sh'
