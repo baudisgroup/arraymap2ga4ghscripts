@@ -12,11 +12,11 @@ import datetime
 @click.command()
 @click.option('-dbin', '--input_db', default='', help='The name of the input database, default is "arraymap"')
 @click.option('-cin', '--input_collection', default='samples', help='The input collection, default is "samples"')
-@click.option('-dbout', '--output_db', default='', help='The name of the output database, default is "arraymap_ga4gh"')
+@click.option('-dbout', '--output_db', default='', help='The name of the output database, default is "arraymap"')
 @click.option('-couti', '--output_collection_individuals', default='individuals', help='The output collection of individuals, default is "individuals"')
 @click.option('-coutb', '--output_collection_biosamples', default='biosamples', help='The output collection of biosamples, default is "biosamples"')
-@click.option('-coutc', '--output_collection_callsets', default='callsets_cnv_grch36', help='The output collection of callsets, default is "callsets"')
-@click.option('-coutv', '--output_collection_variants', default='variants_cnv_grch36', help='The output collection of variants, default is "variants"')
+@click.option('-coutc', '--output_collection_callsets', default='callsets', help='The output collection of callsets, default is "callsets"')
+@click.option('-coutv', '--output_collection_variants', default='variants', help='The output collection of variants, default is "variants"')
 @click.option('-d', '--demo', default=0, type=click.IntRange(0, 10000), help='Only to process a limited number of entries')
 @click.option('--dnw', is_flag=True, help='Do Not Write to the db')
 @click.option('--dna', is_flag=True, help='Do Not Ask before overwriting the database')
@@ -49,7 +49,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     if input_db == '':
         input_db = 'arraymap'
     if output_db == '':
-        output_db = input_db + '_newschema'
+        output_db = input_db 
 
 
     ######################
@@ -104,7 +104,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     # returnType: (optional) convert the return value, support "str", "float', "int", default is no conversion.
     # nullValue: (optional) the return value when attribute doesn't exist nor of the desired type, default is "null"
     ########################################
-    def get_attribute(name, sample, returnType='none', nullValue='null'):
+    def get_attribute(name, sample, returnType='none', nullValue=None):
 
         try:
             val = sample[name]
@@ -238,6 +238,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                 # now just taking them from the sample collection (have been added there)
                 ######################################################################################
                 external_identifiers = sample['external_identifiers']
+                external_identifiers = list(external_identifiers.values())
 
                 ################################################################
                 # generate a biosample
@@ -329,18 +330,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                       "id" : "DUO:0000004"
                                                 },
                                                 'info':{
-                                                   'death':{
-                                                        'type': 'boolean',
-                                                        'value': get_attribute('DEATH', sample)
-                                                    },
-                                                    'followup_months':{
-                                                        'type': 'ISO8601 string',
-                                                        'value': get_attribute('FOLLOWUP', sample)
-                                                    },
-                                                    'tnm':{
-                                                        'type': 'ISO8601 string',
-                                                        'value': get_attribute('TNM', sample)
-                                                    }
+                                                   'death': get_attribute('DEATH', sample),
+                                                    'followup_months': get_attribute('FOLLOWUP', sample),
+                                                    'tnm': get_attribute('TNM', sample)
                                                 } 
                     }
 
@@ -413,29 +405,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                             'geo_provenance': geo_info,
                                             'info': {
                                                 'cnv_maps':{
-                                                    'schema':{
-                                                        'ref': 'https://github.com/progenetix/schemas'
-                                                    },
-                                                    'description': 'The cnv_maps object is a wrapper for genomic interval mapped status information. In Progenetix and arrayMap, this is used to indictate - for fixed 1MB genome intervals - the status (dup_map : \"DUP\" or \"\", del_map => \"DEL\" or \"\"), or the maximum / minimum positive / negative value encountered in the segment, as far as it has been called to contain DUP or DEL.\nWith a standard binning of 1MB, the arrays would contain ~3000 values each (depending on genome edition).',
-                                                    'value':{
-                                                        'dup_map':{
-                                                            'type':'array',
-                                                            'description': 'gain cnv status for the corresponding genome intervals',
-                                                            'value': get_attribute('dupmap', sample['statusmaps'])
-                                                        },
-                                                        'del_map':{
-                                                            'type':'array',
-                                                            'description': 'loss cnv status for the corresponding genome intervals',
-                                                            'value': get_attribute('delmap', sample['statusmaps'])
-                                                        },
-                                                        'binning':{
-                                                            "value" : 1000000,
-                                                            "type" : "number",
-                                                            "description" : "interval size in bases for the binning, when creating the cnv_maps",
-                                                            "format" : "int64"
+
+                                                        'dup_map': get_attribute('dupmap', sample['statusmaps']),
+                                                        'del_map':get_attribute('delmap', sample['statusmaps']),
+                                                        'binning':1000000,
+                                                            
                                                         }
-                                                    }    
-                                                }
+                                                      
+                                                
                                             }
                                         }
                     no_callsets += 1
@@ -468,8 +445,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         end = get_attribute('end', seg,'int')
                         chrom = get_attribute('reference_name', seg, 'str')
                         # cipos,ciend may get values which reflect the array precision
-                        cipos = []
-                        ciend = []
+                        # cipos = []
+                        # ciend = []
                         segvalue = get_attribute('value', seg['info'], 'float')
 
                         digest = '{}:{}-{}:{}'.format(chrom,start,end,variant_type)
@@ -484,17 +461,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                             'reference_bases': '.',
                             'alternate_bases': alternate_bases,
                             'variant_type': variant_type,
-                            'cipos': cipos,
-                            'ciend': ciend,
+                            # 'cipos': cipos,
+                            # 'ciend': ciend,
                             'info':{
-                                'cnv_value': {
-                                    'value': segvalue,
-                                    'type': 'float'
-                                },
-                                'cnv_length':{
-                                    'value': get_attribute('svlen', seg['info'],'int'),
-                                    'type': 'int64'
-                                }
+                                'cnv_value': segvalue,
+                                'cnv_length': get_attribute('svlen', seg['info'],'int'),                                   
                             },
                             'updated': str(datetime.datetime.utcnow()),
                             'variantset_id': variantset_id,
