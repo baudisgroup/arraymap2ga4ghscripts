@@ -1,10 +1,14 @@
+
+## Major changes:
+## 1. flat out calls in variants
+## 2. adapt the latest schema 
+## 3. new db writing method
+
 from pymongo import MongoClient
 import re
 import click
 import sys
 import datetime
-import string
-from bson import ObjectId
 
 
 @click.command()
@@ -87,13 +91,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
     no_sample_w_segments = 0
     no_segments = 0
-    no_uniqueSegments = 0
-    no_variantOneSeg = 0
-    no_variantMultSeg = 0
-
-    i = 1
-    varid = 1
-    callno = 0
 
     ########################################
     # return the number of processed samples
@@ -149,7 +146,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
         with click.progressbar(data.items(), label='Writing ' + label + ':\t', width=25,
                                fill_char=click.style('>', fg='green')) as bar:
             for k, v in bar:
-                insert_id = dbhandler.insert(v)
+                dbhandler.insert(v)
 
 
 
@@ -228,9 +225,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             # check and generate INDIVIDUALS, BIOSAMPLES and CALLSETS #
             ###########################################################
 
-            #only samples with enough attributes are assumed to be valid, the threshold is set to 50 arbitrarily.
-            # MODI: reduce threshold to 30
-            # TODO: check & discuss => ?!
+            #only samples with enough attributes are assumed to be valid.
             try:
                 no_validSamples += 1
 
@@ -376,6 +371,60 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                             }
                     no_callsets += 1
 
+
+
+
+
+                ###############################
+                # check and generate VARIANTS #
+                ###############################
+
+                # only simples with none-empty "variants_cnv" is valid and worthy checking
+                if ('variants' in sample) and (sample['variants'] is not None) and (len(sample['variants']) > 1):
+                    no_sample_w_segments += 1
+
+                    # Generate callset id
+                    # TODO: see above, PMID etc.
+                    # callset_id = 'pgxcs::'+sample['SERIESID']+'::'+sample['UID']
+
+
+                    ######################
+                    # scan every segment
+                    ######################
+                    for seg in sample['variants']:
+                        no_segments += 1
+                        alternate_bases = get_attribute('alternate_bases', seg)
+                        variant_type = get_attribute('variant_type', seg)
+                        start = get_attribute('start',seg,'int')
+                        end = get_attribute('end', seg,'int')
+                        chrom = get_attribute('reference_name', seg, 'str')
+                        # cipos,ciend may get values which reflect the array precision
+                        cipos = []
+                        ciend = []
+                        segvalue = get_attribute('value', seg['info'], 'float')
+
+                        digest = '{}:{}-{}:{}'.format(chrom,start,end,variant_type)
+
+
+                        variants[str(no_segments)] = {
+                            'callset_id': callset_id,
+                            'digest': digest,
+                            'start': start,
+                            'end': end,
+                            'reference_name': chrom,
+                            'reference_bases': '.',
+                            'alternate_bases': alternate_bases,
+                            'variant_type': variant_type,
+                            'cipos': cipos,
+                            'ciend': ciend,
+                            'info':{
+                                'value': segvalue,
+                                'svlen': get_attribute('svlen', seg['info'],'int')
+                            },
+                            'updated': str(datetime.datetime.utcnow()),
+                            'variantset_id': variantset_id
+                            }
+
             except Exception as e:
                 if log:
                     print('ERROR: Unable to process:' + sample['UID'] + str(e), file=log)
@@ -385,84 +434,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
 
 
-            ###############################
-            # check and generate VARIANTS #
-            ###############################
 
-            # only simples with none-empty "variants_cnv" is valid and worthy checking
-            if ('variants_cnv' in sample) and (sample['variants_cnv'] is not None) and (len(sample['variants_cnv']) > 1):
-                no_sample_w_segments += 1
-
-                # Generate callset id
-                # TODO: see above, PMID etc.
-                callset_id = 'pgxcs::'+sample['SERIESID']+'::'+sample['UID']
-
-                ######################
-                # scan every segment
-                ######################
-                for seg in sample['variants_cnv']:
-                    no_segments += 1
-                    alternate_bases = ''
-                    variant_type = get_attribute('variant_type', seg)
-                    start = get_attribute('start',seg,'int')
-                    end = get_attribute('end', seg,'int')
-                    # cipos,ciend may get values which reflect the array precision
-                    cipos = []
-                    ciend = []
-                    varvalue = get_attribute('value', seg['info'])
-
-
-
-                    if variant_type == 'DEL':
-                        alternate_bases = '<DEL>'
-                        cipos = [-1000,1000]
-                        ciend = [-1000,1000]
-                    elif variant_type == 'DUP':
-                        alternate_bases = '<DUP>'
-                        cipos = [-1000,1000]
-                        ciend = [-1000,1000]
-                    else:
-                        if log is not None:
-                            click.echo('TpyeWarning: '+str(callset_id)+' SEGTYPE is NA', file=log)
-                        continue
-
-
-#                    svlen = end - start
-                    # create a tag for each segment
-                    tag = '{}_{}_{}_{}'.format(seg['reference_name'], start, end, alternate_bases)
-                    call = {'callset_id': callset_id, 'genotype': ['.', '.'], 'info': {'value': varvalue, 'biosample_id': biosample_id}}
-                    info = {}
-
-
-                    if tag in variants:
-                        # exists same tag, append the segment
-                        variants[tag]['updated'] = datetime.datetime.utcnow()
-                        variants[tag]['calls'].append(call)
-                        callno += 1
-                    else:
-                        # new tag, create new variant
-                        variants[tag] = {
-                                        'id': 'PGX_AM_V_'+str(varid),
-                                        'start': start,
-                                        'end': end,
-                                        'info': info,
-                                        'variantset_id': variantset_id,
-                                        'reference_name': get_attribute('reference_name', seg, 'str'),
-                                        # 'created': datetime.datetime.utcnow(),
-                                        'updated': datetime.datetime.utcnow(),
-                                        'reference_bases': '.',
-                                        'alternate_bases': alternate_bases,
-                                        'variant_type': variant_type,
-                                        'cipos': cipos,
-                                        'ciend': ciend,
-                                        'calls': [call]
-                                        }
-
-                        varid += 1
-                        callno += 1
-                        no_uniqueSegments += 1
-
-                i += 1
 
 
 
@@ -488,28 +460,28 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     click.echo(str(no_validSamples) + '\t valid samples found')
     click.echo(str(no_biosamples) + '\t biosamples created')
     click.echo(str(no_callsets) + '\t callsets created')
-    click.echo()
+    # click.echo()
 
 
-    click.echo()
-    for k, var in variants.items():
-        numcall = len(var['calls'])
-        if numcall > 1:
-            no_variantMultSeg += 1
-        else:
-            no_variantOneSeg += 1
+    # click.echo()
+    # for k, var in variants.items():
+    #     numcall = len(var['calls'])
+    #     if numcall > 1:
+    #         no_variantMultSeg += 1
+    #     else:
+    #         no_variantOneSeg += 1
 
-    click.echo(str(no_sample_w_segments) + '\t samples have at least one segment')
-    click.echo(str(no_segments) + '\t segments(calls) found')
-    click.echo(str(no_variantOneSeg) + '\t segments are single events in a sample (' + str(no_variantOneSeg) +
-               '/'+str(no_segments)+' = ' + str(round(no_variantOneSeg/no_segments*100, 2)) + '%)')
-    click.echo(str(no_segments-no_variantOneSeg) + '\t segments have companies (' + str(no_segments-no_variantOneSeg) +
-               '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100, 2)) + '%)')
-    click.echo(str(no_uniqueSegments) + '\t variants created')
-    click.echo(str(no_variantOneSeg) + '\t variants are unique (' + str(no_variantOneSeg) +
-               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantOneSeg/no_uniqueSegments*100, 2)) + '%)')
-    click.echo(str(no_variantMultSeg) + '\t variants have multiple calls (' + str(no_variantMultSeg) +
-               '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantMultSeg/no_uniqueSegments*100, 2)) + '%)')
+    # click.echo(str(no_sample_w_segments) + '\t samples have at least one segment')
+    # click.echo(str(no_segments) + '\t segments(calls) found')
+    # click.echo(str(no_variantOneSeg) + '\t segments are single events in a sample (' + str(no_variantOneSeg) +
+    #            '/'+str(no_segments)+' = ' + str(round(no_variantOneSeg/no_segments*100, 2)) + '%)')
+    # click.echo(str(no_segments-no_variantOneSeg) + '\t segments have companies (' + str(no_segments-no_variantOneSeg) +
+    #            '/'+str(no_segments)+' = ' + str(round((no_segments-no_variantOneSeg)/no_segments*100, 2)) + '%)')
+    click.echo(str(no_segments) + '\t variants created')
+    # click.echo(str(no_variantOneSeg) + '\t variants are unique (' + str(no_variantOneSeg) +
+    #            '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantOneSeg/no_uniqueSegments*100, 2)) + '%)')
+    # click.echo(str(no_variantMultSeg) + '\t variants have multiple calls (' + str(no_variantMultSeg) +
+    #            '/'+str(no_uniqueSegments)+' = ' + str(round(no_variantMultSeg/no_uniqueSegments*100, 2)) + '%)')
     click.echo('*'*60)
     click.echo()
 

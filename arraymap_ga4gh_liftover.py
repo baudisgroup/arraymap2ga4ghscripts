@@ -10,7 +10,9 @@ from pymongo import MongoClient
 
 collection_in = MongoClient()['arraymap_ga4gh']['variants_cnv_grch36']
 
-# Read in lifted file of grch37
+##########################################
+##### Read in lifted file of grch37 ######
+##########################################
 segments_37 = {}
 with open('/Users/bogao/DataFiles/tmp/segments_37.txt', 'r') as fi:
     next(fi)
@@ -34,7 +36,10 @@ collection_out = MongoClient()['arraymap_ga4gh']['variants_cnv_grch37']
 collection_out.delete_many({})
 collection_out.insert_many(cnv_37)
 
-# Read in lifted file of grch38
+
+##########################################
+##### Read in lifted file of grch38 ######
+##########################################
 segments_38 = {}
 with open('/Users/bogao/DataFiles/tmp/segments_38.txt', 'r') as fi:
     next(fi)
@@ -59,6 +64,7 @@ collection_out.delete_many({})
 collection_out.insert_many(cnv_38)
 
 # Generate new callsets
+collection_in = MongoClient()['arraymap_ga4gh']['callsets_cnv_grch36']
 callsets_37 = []
 callsets_38 = []
 for sample in collection_in.find({},{'_id':0}):

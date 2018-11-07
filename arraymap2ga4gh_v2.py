@@ -73,7 +73,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
     biosamples = {}
     callsets = {}
     variants = {}
-    variantset_id = 'AM_VS_GRCH36'
+    variantset_id = 'AM_VS_GRCH38'
 
     # counter for demo mode
     sampleno = 1
@@ -292,21 +292,21 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'biocharacteristics': [
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                        'class': {
+                                                        'type': {
                                                             'id': 'pgx:icdot:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
                                                             'label': get_attribute('ICDTOPOGRAPHY', sample)
                                                         }
                                                     },
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                        'class': {
+                                                        'type': {
                                                             'id': 'pgx:icdom:'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
                                                             'label': get_attribute('ICDMORPHOLOGY', sample)
                                                         }  
                                                     },
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
-                                                        'class': {
+                                                        'type': {
                                                             'id': 'ncit:' + get_attribute('NCIT:CODE', sample),
                                                             'label': get_attribute('NCIT:TERM', sample)
                                                        }
@@ -364,11 +364,11 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                 'biocharacteristics': [
                                                     {
                                                         'description': get_attribute('SEX', sample, 'str'),
-                                                        'class': sex
+                                                        'type': sex
                                                     },
                                                     {
                                                         'description' : None,
-                                                        'class':{
+                                                        'type':{
                                                             "id" : "NCBITaxon:9606",
                                                             "label" : "Homo sapiens"
                                                         }
@@ -404,11 +404,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                             'updated': datetime.datetime.utcnow(),
                                             'geo_provenance': geo_info,
                                             'info': {
-                                                'cnv_maps':{
+                                                'statusmaps':{
 
-                                                        'dup_map': get_attribute('dupmap', sample['statusmaps']),
-                                                        'del_map':get_attribute('delmap', sample['statusmaps']),
-                                                        'binning':1000000,
+                                                        'dupmap': get_attribute('dupmap', sample['statusmaps']),
+                                                        'delmap': get_attribute('delmap', sample['statusmaps']),
+                                                        'dupmax': get_attribute('dupmax', sample['statusmaps']),
+                                                        'delmin': get_attribute('delmin', sample['statusmaps']),
+                                                        'binning': get_attribute('binning', sample['statusmaps']),
+                                                        'intervals': get_attribute('intervals', sample['statusmaps'])
                                                             
                                                         }
                                                       
@@ -459,7 +462,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                             'end': [end],
                             'reference_name': chrom,
                             'reference_bases': '.',
-                            'alternate_bases': alternate_bases,
+                            # 'alternate_bases': alternate_bases,
                             'variant_type': variant_type,
                             # 'cipos': cipos,
                             # 'ciend': ciend,
