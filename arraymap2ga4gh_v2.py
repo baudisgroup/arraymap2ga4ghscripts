@@ -110,7 +110,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
             val = sample[name]
         except KeyError:
             if log is not None:
-                click.echo('WARNING: '+str(sample['UID'])+' has no '+name, file=log)
+                if 'UID' in sample:
+                    click.echo('WARNING: '+str(sample['UID'])+' has no '+name, file=log)
+                else:
+                    click.echo('WARNING: {} does not exist. '.format(name), file=log)
             return nullValue
 
         if returnType == 'str':
@@ -425,7 +428,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                             }
                                         }
                     no_callsets += 1
-
 
 
 
