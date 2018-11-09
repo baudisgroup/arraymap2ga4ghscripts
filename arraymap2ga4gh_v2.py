@@ -286,6 +286,10 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                 'longitude': getlong }
 
 
+
+
+
+
                     biosamples[biosample_id] = {
                                                 'id': biosample_id,
                                                 'description': get_attribute('DIAGNOSISTEXT', sample),
@@ -307,7 +311,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
                                                         'type': {
-                                                            'id': 'ncit:' + get_attribute('NCIT:CODE', sample),
+                                                            # 'id': 'ncit:' + get_attribute('NCIT:CODE', sample),
+                                                            'id': 'ncit:'.format(get_attribute('NCIT:CODE', sample)),
                                                             'label': get_attribute('NCIT:TERM', sample)
                                                        }
                                                     }
@@ -335,6 +340,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     'tnm': get_attribute('TNM', sample)
                                                 } 
                     }
+
 
                     no_biosamples += 1
 
@@ -423,7 +429,6 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
 
 
-
                 ###############################
                 # check and generate VARIANTS #
                 ###############################
@@ -441,8 +446,9 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                     # scan every segment
                     ######################
                     for seg in sample['variants']:
+
                         no_segments += 1
-                        alternate_bases = get_attribute('alternate_bases', seg)
+                        # alternate_bases = get_attribute('alternate_bases', seg)
                         variant_type = get_attribute('variant_type', seg)
                         start = get_attribute('start',seg,'int')
                         end = get_attribute('end', seg,'int')
@@ -478,7 +484,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
             except Exception as e:
                 if log:
-                    print('ERROR: Unable to process:' + sample['UID'] + str(e), file=log)
+                    print('ERROR: Unable to process:{} {}'.format(sample['UID'], str(e)), file=log)
 
 
 
