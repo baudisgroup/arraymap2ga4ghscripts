@@ -262,7 +262,7 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         geoLabel = get_attribute('geo_label', sample['geo_data'])
                         geoPrecision = get_attribute('geo_precision', sample['geo_data'])
                         geolat = get_attribute('coordinates', sample['geo_data']['geo_json'])[1]
-                        getlong = get_attribute('coordinates', sample['geo_data']['geo_json'])[0]
+                        geolong = get_attribute('coordinates', sample['geo_data']['geo_json'])[0]
 
                         if city:
                             geoPrecision = 'city'
@@ -280,13 +280,16 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                         geoPrecision = None
                         geolat = None
                         geolong = None
+                        city = None
+                        country = None
+
 
                     geo_info = { 'label': geoLabel,
                                 'precision': geoPrecision, 
                                 'city': city,
                                 'country': country,
                                 'latitude': geolat, 
-                                'longitude': getlong }
+                                'longitude': geolong }
 
 
 
@@ -300,14 +303,14 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
                                                         'type': {
-                                                            'id': 'pgx:icdot:'+str(get_attribute('ICDTOPOGRAPHYCODE', sample)),
+                                                            'id': 'pgx:icdot:'.format(str(get_attribute('ICDTOPOGRAPHYCODE', sample))),
                                                             'label': get_attribute('ICDTOPOGRAPHY', sample)
                                                         }
                                                     },
                                                     {
                                                         'description': get_attribute('DIAGNOSISTEXT', sample),
                                                         'type': {
-                                                            'id': 'pgx:icdom:'+re.sub('/', '', get_attribute('ICDMORPHOLOGYCODE', sample)),
+                                                            'id': 'pgx:icdom:'.format(re.sub('/', '', str(get_attribute('ICDMORPHOLOGYCODE', sample)))),
                                                             'label': get_attribute('ICDMORPHOLOGY', sample)
                                                         }  
                                                     },
@@ -360,8 +363,8 @@ def cli(input_db, input_collection, output_db, output_collection_individuals, ou
 
                     # sex
                     sex = {'term_id': 'PATO:0020000', 'term_label': 'genotypic sex' }
-                    FemaleMatchObj = re.search('^f', get_attribute('SEX', sample, 'str'))
-                    MaleMatchObj = re.search('^m', get_attribute('SEX', sample, 'str'))
+                    FemaleMatchObj = re.search('^f', str(get_attribute('SEX', sample, 'str')))
+                    MaleMatchObj = re.search('^m', str(get_attribute('SEX', sample, 'str')))
                     if MaleMatchObj:
                         sex = {'id': 'PATO:0020001', 'label': 'male genotypic sex' }
                     elif FemaleMatchObj:
